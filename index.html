@@ -1,0 +1,2659 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#6366f1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Family Tracker"/>
+<meta name="description" content="Secure real-time family location tracking"/>
+<title>Family Tracker Pro</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+<style>
+/* ===== CSS CUSTOM PROPERTIES ===== */
+:root {
+  --bg-primary: #0f1117;
+  --bg-secondary: #161b2e;
+  --bg-card: #1a2035;
+  --bg-hover: #1f2842;
+  --bg-input: #0d1526;
+  --border: rgba(99,102,241,0.15);
+  --border-bright: rgba(99,102,241,0.4);
+
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --accent-glow: rgba(99,102,241,0.25);
+
+  --green: #22c55e;
+  --red: #ef4444;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --cyan: #06b6d4;
+  --pink: #ec4899;
+  --purple: #a855f7;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-accent: 0 0 30px rgba(99,102,241,0.2);
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --nav-h: 64px;
+  --bottom-h: 72px;
+  --sidebar-w: 260px;
+
+  --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f0f4ff;
+  --bg-secondary: #e8edf8;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f7ff;
+  --bg-input: #f8faff;
+  --border: rgba(99,102,241,0.15);
+  --border-bright: rgba(99,102,241,0.4);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --shadow: 0 4px 24px rgba(0,0,0,0.1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== SPLASH SCREEN ===== */
+#splash {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg-primary);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px;
+}
+.splash-logo {
+  width: 90px; height: 90px; border-radius: 24px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  box-shadow: 0 0 60px rgba(99,102,241,0.5);
+  animation: splashPulse 1.5s ease-in-out infinite;
+}
+@keyframes splashPulse {
+  0%,100% { transform: scale(1); box-shadow: 0 0 40px rgba(99,102,241,0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 80px rgba(99,102,241,0.7); }
+}
+.splash-title {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.splash-loader {
+  width: 200px; height: 3px; background: var(--bg-card); border-radius: 99px; overflow: hidden;
+}
+.splash-loader-bar {
+  height: 100%; width: 0%; border-radius: 99px;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  animation: loadBar 2s ease forwards;
+}
+@keyframes loadBar { to { width: 100%; } }
+
+/* ===== AUTH SCREEN ===== */
+#auth-screen {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg-primary);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+.auth-card {
+  width: 100%; max-width: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  box-shadow: var(--shadow);
+}
+.auth-logo {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 32px;
+}
+.auth-logo-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.auth-logo-text { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.auth-logo-sub { font-size: 12px; color: var(--text-secondary); }
+
+.auth-tabs {
+  display: flex; gap: 4px; background: var(--bg-secondary);
+  border-radius: 10px; padding: 4px; margin-bottom: 28px;
+}
+.auth-tab {
+  flex: 1; padding: 9px; text-align: center;
+  border: none; border-radius: 8px; background: transparent;
+  color: var(--text-secondary); font-family: var(--font-body);
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: var(--transition);
+}
+.auth-tab.active {
+  background: var(--accent); color: white;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+}
+
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block; font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); margin-bottom: 7px;
+}
+.form-input {
+  width: 100%; padding: 12px 16px;
+  background: var(--bg-input); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text-primary);
+  font-family: var(--font-body); font-size: 15px;
+  transition: var(--transition); outline: none;
+}
+.form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.form-input::placeholder { color: var(--text-muted); }
+.input-with-icon { position: relative; }
+.input-with-icon .form-input { padding-left: 44px; }
+.input-icon {
+  position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 15px; pointer-events: none;
+}
+.input-toggle {
+  position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); background: none; border: none;
+  cursor: pointer; font-size: 15px; padding: 4px;
+}
+
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px 20px; border: none; border-radius: 10px;
+  font-family: var(--font-body); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: var(--transition); position: relative; overflow: hidden;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: white; box-shadow: 0 4px 15px rgba(99,102,241,0.35);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.5); }
+.btn-primary:active { transform: translateY(0); }
+.btn-danger { background: var(--red); color: white; }
+.btn-ghost { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-sm { width: auto; padding: 8px 16px; font-size: 13px; border-radius: 8px; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.auth-divider { text-align: center; color: var(--text-muted); font-size: 13px; margin: 20px 0; }
+
+/* ===== MAIN APP LAYOUT ===== */
+#app {
+  display: none; flex-direction: column; height: 100%;
+  position: relative;
+}
+#app.visible { display: flex; }
+
+/* ===== TOP NAVBAR ===== */
+.topbar {
+  height: var(--nav-h); flex-shrink: 0;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 16px;
+  position: relative; z-index: 100;
+}
+.topbar-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 18px;
+}
+.topbar-logo-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+.topbar-spacer { flex: 1; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); cursor: pointer;
+  transition: var(--transition); position: relative;
+}
+.icon-btn:hover { color: var(--text-primary); border-color: var(--border-bright); }
+.notif-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--red); color: white;
+  font-size: 10px; font-weight: 700;
+  min-width: 18px; height: 18px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg-secondary); padding: 0 3px;
+}
+
+.user-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px 6px 6px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 30px; cursor: pointer; transition: var(--transition);
+}
+.user-chip:hover { border-color: var(--border-bright); }
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; color: white;
+}
+.user-name { font-size: 13px; font-weight: 500; }
+.user-role { font-size: 11px; color: var(--text-muted); }
+
+/* ===== CONTENT AREA ===== */
+.content-area {
+  flex: 1; overflow: hidden; display: flex;
+  position: relative;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto; padding: 16px 12px;
+  transition: transform var(--transition);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; left: 0; top: var(--nav-h); bottom: 0;
+    z-index: 90; width: 280px;
+    transform: translateX(-100%);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0; z-index: 89;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+  }
+  .sidebar-overlay.show { display: block; }
+}
+
+.nav-section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  color: var(--text-muted); text-transform: uppercase;
+  padding: 8px 12px 6px; margin-top: 8px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition);
+  color: var(--text-secondary); font-size: 14px; font-weight: 500;
+  margin-bottom: 2px; position: relative;
+}
+.nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-item.active {
+  background: var(--accent-glow); color: var(--accent-light);
+  border: 1px solid rgba(99,102,241,0.2);
+}
+.nav-item .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+.nav-badge {
+  margin-left: auto; background: var(--red); color: white;
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 10px;
+}
+.sos-nav-badge { background: var(--red); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+
+/* ===== MAIN VIEW ===== */
+.main-view {
+  flex: 1; overflow-y: auto; padding: 24px;
+  scroll-behavior: smooth;
+}
+
+@media (max-width: 768px) { .main-view { padding: 16px; } }
+
+/* ===== VIEWS ===== */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+}
+.page-title { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+.page-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+.page-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 14px; font-weight: 600;
+  color: var(--text-secondary); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ===== STAT CARDS ===== */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  position: relative; overflow: hidden;
+  transition: var(--transition);
+}
+.stat-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+}
+.stat-card.accent::before { background: var(--accent); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.orange::before { background: var(--orange); }
+.stat-card.red::before { background: var(--red); }
+.stat-card.cyan::before { background: var(--cyan); }
+.stat-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 14px;
+}
+.stat-card.accent .stat-icon { background: rgba(99,102,241,0.15); color: var(--accent-light); }
+.stat-card.green .stat-icon { background: rgba(34,197,94,0.15); color: var(--green); }
+.stat-card.orange .stat-icon { background: rgba(249,115,22,0.15); color: var(--orange); }
+.stat-card.red .stat-icon { background: rgba(239,68,68,0.15); color: var(--red); }
+.stat-card.cyan .stat-icon { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.stat-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+/* ===== MEMBER CARDS ===== */
+.members-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.member-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  transition: var(--transition); cursor: pointer;
+}
+.member-card:hover { border-color: var(--border-bright); transform: translateY(-2px); box-shadow: var(--shadow-accent); }
+.member-card-top {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+}
+.member-avatar-lg {
+  width: 54px; height: 54px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.member-name { font-size: 16px; font-weight: 600; }
+.member-role-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600; padding: 3px 8px;
+  border-radius: 6px; margin-top: 4px;
+}
+.role-superadmin { background: rgba(168,85,247,0.15); color: #a855f7; }
+.role-member { background: rgba(99,102,241,0.15); color: var(--accent-light); }
+.member-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; margin-bottom: 8px;
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 1.5s infinite; }
+.status-dot.offline { background: var(--text-muted); }
+
+.member-info-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;
+}
+.member-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+/* ===== MAP CONTAINER ===== */
+.map-container {
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--border);
+  height: calc(100vh - 200px); min-height: 400px;
+  position: relative;
+}
+#map { width: 100%; height: 100%; }
+.map-controls-panel {
+  position: absolute; top: 16px; right: 16px;
+  display: flex; flex-direction: column; gap: 8px; z-index: 10;
+}
+.map-ctrl-btn {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-primary); font-size: 16px;
+  box-shadow: var(--shadow); transition: var(--transition);
+}
+.map-ctrl-btn:hover { background: var(--accent); color: white; }
+
+/* ===== MEMBER MAP SIDEBAR ===== */
+.tracking-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px; height: calc(100vh - 140px);
+}
+@media (max-width: 900px) {
+  .tracking-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+.member-list-panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow-y: auto; padding: 16px;
+}
+.member-list-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: 10px;
+  cursor: pointer; transition: var(--transition);
+  margin-bottom: 6px;
+}
+.member-list-item:hover { background: var(--bg-hover); }
+.member-list-item.selected { background: var(--accent-glow); border: 1px solid rgba(99,102,241,0.2); }
+.member-list-avatar {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 600; color: white; flex-shrink: 0;
+}
+.ml-name { font-size: 14px; font-weight: 600; }
+.ml-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.battery-indicator {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; color: var(--text-secondary);
+}
+
+/* ===== GEOFENCE ===== */
+.geofence-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 16px; }
+.geofence-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+}
+.geofence-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 12px;
+}
+.geofence-name { font-size: 16px; font-weight: 600; }
+.geofence-meta { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+/* ===== SOS ===== */
+.sos-button-big {
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, #dc2626, #991b1b);
+  border: 4px solid rgba(239,68,68,0.3);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--transition); margin: 32px auto;
+  color: white; font-family: var(--font-display);
+  box-shadow: 0 0 0 0 rgba(239,68,68,0.7);
+  animation: sosPulse 2s infinite;
+}
+@keyframes sosPulse {
+  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+  70% { box-shadow: 0 0 0 20px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+.sos-button-big:hover { transform: scale(1.05); }
+.sos-button-big i { font-size: 52px; margin-bottom: 8px; }
+.sos-button-big span { font-size: 22px; font-weight: 700; }
+
+.sos-alert-card {
+  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius); padding: 18px; margin-bottom: 12px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.sos-alert-card.resolved {
+  background: var(--bg-card); border-color: var(--border); opacity: 0.6;
+}
+.sos-icon { font-size: 28px; }
+
+/* ===== HISTORY ===== */
+.history-filters {
+  display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.filter-select {
+  padding: 9px 14px; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text-primary); font-family: var(--font-body);
+  font-size: 14px; outline: none; cursor: pointer;
+}
+.filter-select:focus { border-color: var(--accent); }
+
+/* ===== TABLES ===== */
+.table-container { overflow-x: auto; border-radius: var(--radius); }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left; padding: 12px 16px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--text-muted);
+  background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+}
+tbody td {
+  padding: 13px 16px; font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+tbody tr:hover { background: var(--bg-hover); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ===== REPORTS ===== */
+.report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 16px; }
+
+/* ===== SETTINGS ===== */
+.settings-section { margin-bottom: 28px; }
+.settings-section h3 {
+  font-size: 15px; font-weight: 600; margin-bottom: 14px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.setting-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+}
+.setting-label { font-size: 14px; font-weight: 500; }
+.setting-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ===== TOGGLE ===== */
+.toggle {
+  width: 46px; height: 26px; border-radius: 13px;
+  background: var(--bg-input); border: 2px solid var(--border);
+  position: relative; cursor: pointer; transition: var(--transition);
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); border-color: var(--accent); }
+.toggle::after {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: white; top: 2px; left: 2px;
+  transition: var(--transition);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* ===== NOTIFICATION PANEL ===== */
+.notif-panel {
+  position: fixed; top: var(--nav-h); right: 0;
+  width: 360px; bottom: 0; z-index: 200;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%); transition: transform var(--transition);
+  display: flex; flex-direction: column;
+  box-shadow: -8px 0 40px rgba(0,0,0,0.3);
+}
+.notif-panel.open { transform: translateX(0); }
+@media (max-width: 768px) { .notif-panel { width: 100%; } }
+.notif-panel-header {
+  padding: 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font-display); font-weight: 700; font-size: 18px;
+}
+.notif-list { flex: 1; overflow-y: auto; padding: 12px; }
+.notif-item {
+  padding: 14px; border-radius: 10px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  margin-bottom: 8px; transition: var(--transition);
+}
+.notif-item.unread { border-color: var(--accent); background: rgba(99,102,241,0.05); }
+.notif-type { font-size: 12px; font-weight: 600; color: var(--accent-light); margin-bottom: 4px; }
+.notif-msg { font-size: 14px; }
+.notif-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 28px;
+  width: 100%; max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn { from { opacity:0; transform: scale(0.95) translateY(10px); } }
+.modal-title {
+  font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  margin-bottom: 20px; display: flex; align-items: center;
+  justify-content: space-between;
+}
+.modal-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-secondary); border: none; cursor: pointer;
+  color: var(--text-secondary); font-size: 16px;
+}
+
+/* ===== TOAST ===== */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9000;
+  display: flex; flex-direction: column; gap: 10px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px;
+  font-size: 14px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 10px;
+  animation: toastIn 0.3s ease; pointer-events: all;
+  max-width: 320px;
+}
+@keyframes toastIn { from { opacity:0; transform: translateX(20px); } }
+.toast.success { border-color: var(--green); }
+.toast.error { border-color: var(--red); }
+.toast.warning { border-color: var(--orange); }
+.toast-icon { font-size: 18px; }
+.toast.success .toast-icon { color: var(--green); }
+.toast.error .toast-icon { color: var(--red); }
+.toast.warning .toast-icon { color: var(--orange); }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-secondary);
+}
+.empty-state i { font-size: 56px; color: var(--text-muted); margin-bottom: 16px; display: block; }
+.empty-state h3 { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; }
+
+/* ===== LOADING ===== */
+.loading-spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.7s linear infinite; margin: 40px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== GAS URL SETUP ===== */
+.setup-banner {
+  background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.3);
+  border-radius: 12px; padding: 16px 20px;
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-bottom: 20px;
+}
+.setup-banner i { color: var(--orange); font-size: 20px; margin-top: 2px; }
+
+/* ===== BOTTOM NAV (mobile) ===== */
+.bottom-nav {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0;
+  height: var(--bottom-h); background: var(--bg-secondary);
+  border-top: 1px solid var(--border); z-index: 80;
+  padding: 0 8px; align-items: center; justify-content: space-around;
+}
+@media (max-width: 768px) { .bottom-nav { display: flex; } }
+.bottom-nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 14px; border-radius: 10px; cursor: pointer;
+  color: var(--text-secondary); font-size: 11px; font-weight: 500;
+  transition: var(--transition); min-width: 56px; text-align: center;
+}
+.bottom-nav-item.active { color: var(--accent-light); }
+.bottom-nav-item i { font-size: 20px; }
+.sos-fab {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 22px; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(239,68,68,0.5);
+  animation: sosPulse 2.5s infinite; flex-shrink: 0;
+}
+
+@media (max-width: 768px) { 
+  .main-view { padding-bottom: calc(var(--bottom-h) + 16px); }
+}
+
+/* ===== PILL CHIPS ===== */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+}
+.chip-green { background: rgba(34,197,94,0.15); color: var(--green); }
+.chip-red { background: rgba(239,68,68,0.15); color: var(--red); }
+.chip-yellow { background: rgba(234,179,8,0.15); color: var(--yellow); }
+.chip-blue { background: rgba(99,102,241,0.15); color: var(--accent-light); }
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+  height: 6px; background: var(--bg-input);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 3px; }
+
+/* ===== GRID UTILS ===== */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.mt-4 { margin-top: 16px; }
+.mb-4 { margin-bottom: 16px; }
+.text-sm { font-size: 13px; }
+.text-muted { color: var(--text-secondary); }
+.fw-600 { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">📍</div>
+  <div class="splash-title">Family Tracker Pro</div>
+  <div style="font-size:13px;color:var(--text-secondary)">Secure • Real-time • Family</div>
+  <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" style="display:none">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">📍</div>
+      <div>
+        <div class="auth-logo-text">Family Tracker Pro</div>
+        <div class="auth-logo-sub">Secure family location sharing</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form">
+      <div id="login-setup-warn" class="setup-banner" style="display:none">
+        <i class="fas fa-triangle-exclamation"></i>
+        <div>
+          <strong>Setup Required</strong><br>
+          <span style="font-size:13px;color:var(--text-secondary)">Please set your Google Apps Script URL in Settings after first login.</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mobile Number or Email</label>
+        <div class="input-with-icon">
+          <i class="fas fa-user input-icon"></i>
+          <input type="text" id="login-id" class="form-input" placeholder="03001234567 or email@example.com"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-with-icon">
+          <i class="fas fa-lock input-icon"></i>
+          <input type="password" id="login-pass" class="form-input" placeholder="Enter your password"/>
+          <button class="input-toggle" onclick="togglePass('login-pass')"><i class="fas fa-eye"></i></button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="remember-me" style="accent-color:var(--accent)"/> Remember me
+        </label>
+        <a href="#" style="font-size:13px;color:var(--accent-light);text-decoration:none">Forgot password?</a>
+      </div>
+      <button class="btn btn-primary" onclick="handleLogin()">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+      <div class="auth-divider">── Demo Mode ──</div>
+      <button class="btn btn-ghost" onclick="demoLogin()">
+        <i class="fas fa-flask"></i> Try Demo (no backend needed)
+      </button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="register-form" style="display:none">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="reg-name" class="form-input" placeholder="Ahmed Ali"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile *</label>
+          <input type="text" id="reg-mobile" class="form-input" placeholder="03001234567"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="ahmed@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password *</label>
+        <div class="input-with-icon">
+          <i class="fas fa-lock input-icon"></i>
+          <input type="password" id="reg-pass" class="form-input" placeholder="Min 8 characters"/>
+          <button class="input-toggle" onclick="togglePass('reg-pass')"><i class="fas fa-eye"></i></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password *</label>
+        <input type="password" id="reg-pass2" class="form-input" placeholder="Repeat password"/>
+      </div>
+      <button class="btn btn-primary" onclick="handleRegister()">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="icon-btn" id="sidebar-toggle" onclick="toggleSidebar()" style="display:none">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="topbar-logo">
+      <div class="topbar-logo-icon">📍</div>
+      <span>Family Tracker Pro</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <div class="icon-btn" id="notif-btn" onclick="toggleNotifPanel()" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge" id="notif-count" style="display:none">0</span>
+      </div>
+      <div class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
+        <i class="fas fa-moon" id="theme-icon"></i>
+      </div>
+      <div class="user-chip" onclick="navigateTo('settings')">
+        <div class="user-avatar" id="topbar-avatar" style="background:var(--accent)"></div>
+        <div>
+          <div class="user-name" id="topbar-name">Loading...</div>
+          <div class="user-role" id="topbar-role"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <div class="nav-section-label">Main</div>
+      <div class="nav-item active" data-view="dashboard" onclick="navigateTo('dashboard')">
+        <i class="nav-icon fas fa-grid-2"></i> Dashboard
+      </div>
+      <div class="nav-item" data-view="tracking" onclick="navigateTo('tracking')">
+        <i class="nav-icon fas fa-map-location-dot"></i> Live Tracking
+      </div>
+      <div class="nav-item" data-view="members" onclick="navigateTo('members')">
+        <i class="nav-icon fas fa-users"></i> Family Members
+      </div>
+
+      <div class="nav-section-label">Tools</div>
+      <div class="nav-item" data-view="history" onclick="navigateTo('history')">
+        <i class="nav-icon fas fa-clock-rotate-left"></i> Location History
+      </div>
+      <div class="nav-item" data-view="geofencing" onclick="navigateTo('geofencing')">
+        <i class="nav-icon fas fa-shield-halved"></i> Geofencing
+      </div>
+      <div class="nav-item" data-view="sos" onclick="navigateTo('sos')">
+        <i class="nav-icon fas fa-triangle-exclamation"></i> SOS Alerts
+        <span class="nav-badge sos-nav-badge" id="sos-nav-badge" style="display:none">0</span>
+      </div>
+
+      <div class="nav-section-label">Analytics</div>
+      <div class="nav-item" data-view="reports" onclick="navigateTo('reports')">
+        <i class="nav-icon fas fa-chart-bar"></i> Reports
+      </div>
+      <div class="nav-item" data-view="settings" onclick="navigateTo('settings')">
+        <i class="nav-icon fas fa-gear"></i> Settings
+      </div>
+
+      <div style="margin-top:auto;padding-top:20px">
+        <button class="btn btn-ghost btn-sm" onclick="handleLogout()" style="width:100%">
+          <i class="fas fa-right-from-bracket"></i> Sign Out
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-view" id="main-view">
+
+      <!-- DASHBOARD VIEW -->
+      <div class="view active" id="view-dashboard">
+        <div class="page-header">
+          <div>
+            <div class="page-title" id="dash-greeting">Good morning! 👋</div>
+            <div class="page-subtitle" id="dash-date"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="refreshAll()">
+            <i class="fas fa-rotate-right"></i> Refresh
+          </button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card accent">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total Members</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon"><i class="fas fa-signal"></i></div>
+            <div class="stat-value" id="stat-online">0</div>
+            <div class="stat-label">Online Now</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="stat-value" id="stat-zones">0</div>
+            <div class="stat-label">Safe Zones</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="stat-value" id="stat-sos">0</div>
+            <div class="stat-label">SOS Alerts</div>
+          </div>
+        </div>
+
+        <!-- Quick Map -->
+        <div class="card mb-4">
+          <div class="card-title"><i class="fas fa-map"></i> Live Overview</div>
+          <div id="dash-map" style="height:320px;border-radius:10px;overflow:hidden;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
+            <div style="text-align:center">
+              <i class="fas fa-map-location-dot" style="font-size:48px;margin-bottom:12px;display:block"></i>
+              <div>Configure Google Maps API key in Settings</div>
+              <div style="font-size:12px;margin-top:4px">or <a href="#" onclick="navigateTo('tracking')" style="color:var(--accent-light)">go to Live Tracking</a></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Members Overview -->
+        <div class="card">
+          <div class="card-title" style="justify-content:space-between">
+            <span><i class="fas fa-users"></i> Family Members</span>
+            <a href="#" onclick="navigateTo('members')" style="font-size:13px;color:var(--accent-light);text-decoration:none">View all →</a>
+          </div>
+          <div id="dash-members-list">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE TRACKING VIEW -->
+      <div class="view" id="view-tracking">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Live Tracking</div>
+            <div class="page-subtitle">Real-time location of all family members</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-ghost btn-sm" onclick="loadLocations()">
+              <i class="fas fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="tracking-layout">
+          <div class="member-list-panel">
+            <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-secondary)">
+              <i class="fas fa-satellite-dish"></i> Active Trackers
+            </div>
+            <div id="tracking-member-list">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="map-container">
+              <div id="map" style="background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
+                <div style="text-align:center">
+                  <i class="fas fa-map" style="font-size:56px;display:block;margin-bottom:16px"></i>
+                  <div style="font-size:16px;font-weight:500">Google Maps</div>
+                  <div style="font-size:13px;margin-top:4px">Add your API key in Settings → Maps to enable</div>
+                  <button class="btn btn-primary btn-sm mt-4" onclick="navigateTo('settings')">
+                    <i class="fas fa-gear"></i> Configure Now
+                  </button>
+                </div>
+              </div>
+              <div class="map-controls-panel">
+                <div class="map-ctrl-btn" onclick="locateMe()" title="My Location"><i class="fas fa-crosshairs"></i></div>
+                <div class="map-ctrl-btn" onclick="toggleMapType()" title="Satellite View"><i class="fas fa-satellite"></i></div>
+                <div class="map-ctrl-btn" onclick="fitAllMarkers()" title="Fit All"><i class="fas fa-expand"></i></div>
+              </div>
+            </div>
+            <!-- Selected member detail -->
+            <div class="card" id="selected-member-detail" style="display:none">
+              <div class="card-title"><i class="fas fa-user-location"></i> Member Details</div>
+              <div id="selected-member-content"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMBERS VIEW -->
+      <div class="view" id="view-members">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Family Members</div>
+            <div class="page-subtitle">Manage and monitor your family</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary btn-sm" onclick="showAddMemberModal()" id="add-member-btn">
+              <i class="fas fa-user-plus"></i> Add Member
+            </button>
+          </div>
+        </div>
+        <div class="members-grid" id="members-grid">
+          <div class="loading-spinner"></div>
+        </div>
+      </div>
+
+      <!-- HISTORY VIEW -->
+      <div class="view" id="view-history">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Location History</div>
+            <div class="page-subtitle">Track movement records</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-ghost btn-sm" onclick="exportHistory()">
+              <i class="fas fa-download"></i> Export
+            </button>
+          </div>
+        </div>
+        <div class="history-filters">
+          <select class="filter-select" id="hist-member-filter">
+            <option value="">All Members</option>
+          </select>
+          <input type="date" class="filter-select" id="hist-date-filter"/>
+          <button class="btn btn-primary btn-sm" onclick="loadHistory()">
+            <i class="fas fa-filter"></i> Filter
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Latitude</th>
+                  <th>Longitude</th>
+                  <th>Speed</th>
+                  <th>Time</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <tr><td colspan="6"><div class="loading-spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- GEOFENCING VIEW -->
+      <div class="view" id="view-geofencing">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Geofencing</div>
+            <div class="page-subtitle">Create and manage safe zones</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showAddZoneModal()">
+            <i class="fas fa-plus"></i> Add Zone
+          </button>
+        </div>
+        <div class="geofence-grid" id="geofence-grid">
+          <div class="loading-spinner"></div>
+        </div>
+      </div>
+
+      <!-- SOS VIEW -->
+      <div class="view" id="view-sos">
+        <div class="page-header">
+          <div>
+            <div class="page-title">SOS Emergency</div>
+            <div class="page-subtitle">Send emergency alerts to all family members</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card" style="text-align:center">
+            <div class="card-title" style="justify-content:center">
+              <i class="fas fa-triangle-exclamation" style="color:var(--red)"></i> Emergency Button
+            </div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">
+              Press to send your location to all family members
+            </p>
+            <div class="sos-button-big" onclick="sendSOSAlert()">
+              <i class="fas fa-sos"></i>
+              <span>SOS</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted)">Hold 3 seconds to activate</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fas fa-list-ul"></i> Active Alerts</div>
+            <div id="sos-alerts-list">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS VIEW -->
+      <div class="view" id="view-reports">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Reports</div>
+            <div class="page-subtitle">Movement analytics and summaries</div>
+          </div>
+          <div class="page-actions">
+            <select class="filter-select" id="report-member">
+              <option value="">All Members</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="loadReports()">
+              <i class="fas fa-chart-bar"></i> Generate
+            </button>
+          </div>
+        </div>
+        <div class="stats-grid" id="report-stats">
+          <div style="color:var(--text-muted);font-size:14px;grid-column:1/-1;padding:20px">
+            Select a member and click Generate to view report.
+          </div>
+        </div>
+        <div class="card mt-4">
+          <div class="card-title"><i class="fas fa-calendar-days"></i> Daily Activity</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Location Points</th><th>Max Speed</th><th>Activity</th></tr>
+              </thead>
+              <tbody id="report-tbody">
+                <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:30px">No report generated yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS VIEW -->
+      <div class="view" id="view-settings">
+        <div class="page-header">
+          <div class="page-title">Settings</div>
+        </div>
+
+        <div style="max-width:640px">
+          <!-- GAS Config -->
+          <div class="settings-section">
+            <h3><i class="fas fa-server" style="color:var(--accent)"></i> Backend Configuration</h3>
+            <div id="config-status-banner" class="setup-banner" style="display:none;border-color:var(--green);background:rgba(34,197,94,0.08)">
+              <i class="fas fa-circle-check" style="color:var(--green)"></i>
+              <div style="font-size:13px">
+                <strong>✅ config.js sy URL load hui!</strong><br>
+                <span style="color:var(--text-muted);font-size:11px" id="config-url-preview"></span>
+              </div>
+            </div>
+            <div class="setup-banner">
+              <i class="fas fa-circle-info" style="color:var(--cyan)"></i>
+              <div style="font-size:13px">
+                <strong>Easy Setup:</strong> Sirf <code>config.js</code> mein GAS_URL paste karo — yeh field automatically bhar jaayegi. Ya yahan manually paste karo.
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Google Apps Script URL</label>
+              <input type="url" id="gas-url-input" class="form-input" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"/>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveGasUrl()">
+              <i class="fas fa-save"></i> Save & Test Connection
+            </button>
+          </div>
+
+          <!-- Maps Config -->
+          <div class="settings-section">
+            <h3><i class="fas fa-map" style="color:var(--green)"></i> Google Maps</h3>
+            <div class="form-group">
+              <label class="form-label">Google Maps API Key</label>
+              <input type="text" id="maps-key-input" class="form-input" placeholder="AIzaSy..."/>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:6px">
+                Get a free API key from <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent-light)">Google Cloud Console</a>. Enable Maps JavaScript API.
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveMapsKey()">
+              <i class="fas fa-key"></i> Save & Load Map
+            </button>
+          </div>
+
+          <!-- Location Settings -->
+          <div class="settings-section">
+            <h3><i class="fas fa-location-dot" style="color:var(--orange)"></i> Location Sharing</h3>
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">Share My Location</div>
+                <div class="setting-desc">Allow others to see your location</div>
+              </div>
+              <div class="toggle on" id="share-toggle" onclick="toggleSetting(this, 'shareLocation')"></div>
+            </div>
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">Update Interval</div>
+                <div class="setting-desc">How often to update location</div>
+              </div>
+              <select class="filter-select" id="update-interval" style="width:auto">
+                <option value="30">30 seconds</option>
+                <option value="60">1 minute</option>
+                <option value="120">2 minutes</option>
+                <option value="300">5 minutes</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">High Accuracy GPS</div>
+                <div class="setting-desc">Use GPS for precise location (uses more battery)</div>
+              </div>
+              <div class="toggle on" id="accuracy-toggle" onclick="toggleSetting(this, 'highAccuracy')"></div>
+            </div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="settings-section">
+            <h3><i class="fas fa-bell" style="color:var(--yellow)"></i> Notifications</h3>
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">Push Notifications</div>
+                <div class="setting-desc">Browser push notifications</div>
+              </div>
+              <div class="toggle" id="notif-toggle" onclick="requestNotifPermission()"></div>
+            </div>
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">SOS Alerts</div>
+                <div class="setting-desc">Always notified for emergency alerts</div>
+              </div>
+              <div class="toggle on"></div>
+            </div>
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">Geofence Alerts</div>
+                <div class="setting-desc">Alert when member enters/exits zone</div>
+              </div>
+              <div class="toggle on" id="geo-notif-toggle" onclick="toggleSetting(this, 'geoNotif')"></div>
+            </div>
+          </div>
+
+          <!-- Profile -->
+          <div class="settings-section">
+            <h3><i class="fas fa-user" style="color:var(--purple)"></i> My Profile</h3>
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="profile-name" class="form-input"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number</label>
+              <input type="text" id="profile-mobile" class="form-input"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" id="profile-email" class="form-input"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Home Address</label>
+              <input type="text" id="profile-home" class="form-input" placeholder="Enter home address"/>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveProfile()">
+              <i class="fas fa-save"></i> Update Profile
+            </button>
+          </div>
+
+          <!-- Theme -->
+          <div class="settings-section">
+            <h3><i class="fas fa-palette" style="color:var(--pink)"></i> Appearance</h3>
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">Dark Mode</div>
+                <div class="setting-desc">Switch between dark and light theme</div>
+              </div>
+              <div class="toggle on" id="dark-mode-toggle" onclick="toggleTheme()"></div>
+            </div>
+          </div>
+
+          <!-- Danger -->
+          <div class="settings-section">
+            <h3><i class="fas fa-triangle-exclamation" style="color:var(--red)"></i> Danger Zone</h3>
+            <button class="btn btn-danger btn-sm" onclick="handleLogout()">
+              <i class="fas fa-right-from-bracket"></i> Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-view -->
+  </div>
+
+  <!-- NOTIFICATION PANEL -->
+  <div class="notif-panel" id="notif-panel">
+    <div class="notif-panel-header">
+      Notifications
+      <button class="modal-close" onclick="toggleNotifPanel()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="notif-list" id="notif-list">
+      <div class="empty-state">
+        <i class="fas fa-bell-slash"></i>
+        <h3>No notifications</h3>
+        <p>You're all caught up!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <div class="bottom-nav">
+    <div class="bottom-nav-item active" data-view="dashboard" onclick="navigateTo('dashboard')">
+      <i class="fas fa-house"></i> Home
+    </div>
+    <div class="bottom-nav-item" data-view="tracking" onclick="navigateTo('tracking')">
+      <i class="fas fa-map-location-dot"></i> Track
+    </div>
+    <div class="sos-fab" onclick="sendSOSAlert()" title="Emergency SOS">
+      <i class="fas fa-sos"></i>
+    </div>
+    <div class="bottom-nav-item" data-view="members" onclick="navigateTo('members')">
+      <i class="fas fa-users"></i> Family
+    </div>
+    <div class="bottom-nav-item" data-view="settings" onclick="navigateTo('settings')">
+      <i class="fas fa-gear"></i> Settings
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modal-container"></div>
+<div id="toast-container"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+// Config.js pehle load hoti hai — values localStorage mein aa jaati hain
+const APP = {
+  gasUrl:          localStorage.getItem('gasUrl')    || (typeof FT_CONFIG !== 'undefined' ? FT_CONFIG.GAS_URL    : ''),
+  mapsKey:         localStorage.getItem('mapsKey')   || (typeof FT_CONFIG !== 'undefined' ? FT_CONFIG.MAPS_API_KEY : ''),
+  token:           localStorage.getItem('authToken') || '',
+  user:            JSON.parse(localStorage.getItem('authUser') || 'null'),
+  isDemoMode:      false,
+  currentView:     'dashboard',
+  mapInstance:     null,
+  mapMarkers:      {},
+  mapType:         'roadmap',
+  locationWatcher: null,
+  locationInterval:null,
+  demoMembers:     [],
+  settings:        JSON.parse(localStorage.getItem('appSettings') || '{}'),
+  config:          typeof FT_CONFIG !== 'undefined' ? FT_CONFIG : {}
+};
+
+// Demo data
+const DEMO_MEMBERS = [
+  { userID: 'USR-001', name: 'Ahmed Ali', mobile: '03001234567', email: 'ahmed@demo.com', role: 'superadmin', status: 'active' },
+  { userID: 'USR-002', name: 'Fatima Ali', mobile: '03002345678', email: 'fatima@demo.com', role: 'member', status: 'active' },
+  { userID: 'USR-003', name: 'Omar Ali', mobile: '03003456789', email: 'omar@demo.com', role: 'member', status: 'active' },
+  { userID: 'USR-004', name: 'Zainab Ali', mobile: '03004567890', email: 'zainab@demo.com', role: 'member', status: 'active' }
+];
+
+const DEMO_LOCATIONS = [
+  { userID: 'USR-001', name: 'Ahmed Ali', latitude: 25.3960, longitude: 68.3578, battery: 87, speed: 0, accuracy: 10, isOnline: true, minsAgo: 0 },
+  { userID: 'USR-002', name: 'Fatima Ali', latitude: 25.4025, longitude: 68.3642, battery: 62, speed: 12, accuracy: 15, isOnline: true, minsAgo: 1 },
+  { userID: 'USR-003', name: 'Omar Ali', latitude: 25.3898, longitude: 68.3512, battery: 34, speed: 0, accuracy: 20, isOnline: false, minsAgo: 45 },
+  { userID: 'USR-004', name: 'Zainab Ali', latitude: 25.3950, longitude: 68.3700, battery: 91, speed: 5, accuracy: 8, isOnline: true, minsAgo: 0 }
+];
+
+const MEMBER_COLORS = ['#6366f1','#22c55e','#f97316','#ec4899','#06b6d4','#a855f7','#eab308'];
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
+  // Restore settings
+  const theme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-icon').className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+
+  // Load saved inputs
+  if (APP.gasUrl) document.getElementById('gas-url-input').value = APP.gasUrl;
+  if (APP.mapsKey) document.getElementById('maps-key-input').value = APP.mapsKey;
+
+  // Splash → Auth
+  setTimeout(() => {
+    document.getElementById('splash').style.opacity = '0';
+    document.getElementById('splash').style.transition = 'opacity 0.5s';
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+      if (APP.token && APP.user) {
+        startApp();
+      } else {
+        document.getElementById('auth-screen').style.display = 'flex';
+      }
+    }, 500);
+  }, 2200);
+
+  // Responsive sidebar toggle button
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar-toggle').style.display = 'flex';
+  }
+  window.addEventListener('resize', () => {
+    document.getElementById('sidebar-toggle').style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+  });
+});
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='register'));
+  });
+  document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+}
+
+function togglePass(id) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+async function handleLogin() {
+  const identifier = document.getElementById('login-id').value.trim();
+  const password = document.getElementById('login-pass').value;
+  if (!identifier || !password) return showToast('Please enter your credentials', 'warning');
+  if (!APP.gasUrl) {
+    showToast('No backend URL set. Try Demo mode.', 'warning');
+    document.getElementById('login-setup-warn').style.display = 'flex';
+    return;
+  }
+  try {
+    showToast('Signing in...', 'info');
+    const res = await apiCall({ action: 'login', identifier, password });
+    if (res.error) return showToast(res.error, 'error');
+    localStorage.setItem('authToken', res.token);
+    localStorage.setItem('authUser', JSON.stringify(res.user));
+    APP.token = res.token; APP.user = res.user;
+    startApp();
+  } catch (e) { showToast('Connection failed. Check your GAS URL.', 'error'); }
+}
+
+async function handleRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const mobile = document.getElementById('reg-mobile').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  if (!name || !mobile || !password) return showToast('Fill in all required fields', 'warning');
+  if (password !== pass2) return showToast('Passwords do not match', 'error');
+  if (password.length < 6) return showToast('Password must be at least 6 characters', 'error');
+  if (!APP.gasUrl) return showToast('Set GAS URL in settings first', 'warning');
+  try {
+    const res = await apiCall({ action: 'register', name, mobile, email, password });
+    if (res.error) return showToast(res.error, 'error');
+    showToast('Account created! Please sign in.', 'success');
+    switchAuthTab('login');
+  } catch(e) { showToast('Registration failed', 'error'); }
+}
+
+function demoLogin() {
+  APP.isDemoMode = true;
+  APP.user = { userID: 'USR-001', name: 'Ahmed Ali (Demo)', role: 'superadmin', email: 'ahmed@demo.com' };
+  APP.token = 'demo-token';
+  showToast('Demo mode activated!', 'success');
+  startApp();
+}
+
+function handleLogout() {
+  if (APP.token && !APP.isDemoMode) apiCall({ action: 'logout', token: APP.token }).catch(() => {});
+  clearInterval(APP.locationInterval);
+  navigator.geolocation?.clearWatch(APP.locationWatcher);
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('authUser');
+  APP.token = ''; APP.user = null; APP.isDemoMode = false;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+// ============================================================
+// APP START
+// ============================================================
+function startApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+
+  // Topbar user
+  document.getElementById('topbar-name').textContent = APP.user.name;
+  document.getElementById('topbar-role').textContent = APP.user.role === 'superadmin' ? 'Super Admin' : 'Family Member';
+  const avatar = document.getElementById('topbar-avatar');
+  avatar.textContent = APP.user.name.charAt(0).toUpperCase();
+  avatar.style.background = MEMBER_COLORS[0];
+
+  // Show/hide admin controls
+  if (APP.user.role !== 'superadmin') {
+    document.getElementById('add-member-btn').style.display = 'none';
+  }
+
+  // Config.js status check
+  const banner = document.getElementById('config-status-banner');
+  const preview = document.getElementById('config-url-preview');
+  if (APP.gasUrl && !APP.gasUrl.includes('YOUR_SCRIPT_ID') && banner && preview) {
+    banner.style.display = 'flex';
+    preview.textContent = APP.gasUrl.substring(0, 60) + '...';
+  }
+
+  // GAS URL field pre-fill
+  const gasInput = document.getElementById('gas-url-input');
+  if (gasInput && APP.gasUrl) gasInput.value = APP.gasUrl;
+  const mapsInput = document.getElementById('maps-key-input');
+  if (mapsInput && APP.mapsKey) mapsInput.value = APP.mapsKey;
+
+  // Pre-fill profile
+  document.getElementById('profile-name').value = APP.user.name || '';
+  document.getElementById('profile-mobile').value = APP.user.mobile || '';
+  document.getElementById('profile-email').value = APP.user.email || '';
+
+  // Dashboard date/greeting
+  setDashboardGreeting();
+
+  // Load initial data
+  navigateTo('dashboard');
+  refreshAll();
+
+  // Start location tracking
+  startLocationTracking();
+
+  // Auto-refresh every 30s
+  setInterval(refreshLiveData, 30000);
+
+  // Check notification permission
+  if (Notification.permission === 'granted') {
+    document.getElementById('notif-toggle').classList.add('on');
+  }
+
+  // Load maps if key exists
+  if (APP.mapsKey) loadGoogleMaps();
+
+  // Set date filter default
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('hist-date-filter').value = today;
+}
+
+function setDashboardGreeting() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('dash-greeting').textContent = `${greet}, ${APP.user.name.split(' ')[0]}! 👋`;
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+}
+
+// ============================================================
+// API
+// ============================================================
+async function apiCall(params) {
+  if (APP.isDemoMode) return demoApiCall(params);
+  if (!APP.gasUrl) throw new Error('No GAS URL');
+  const url = APP.gasUrl + '?action=' + params.action;
+  const res = await fetch(APP.gasUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...params, token: APP.token })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+// Demo API simulating backend
+function demoApiCall(params) {
+  const delay = ms => new Promise(r => setTimeout(r, ms));
+  return delay(400).then(() => {
+    switch (params.action) {
+      case 'getMembers': return { success: true, members: DEMO_MEMBERS };
+      case 'getLocations': return { success: true, locations: DEMO_LOCATIONS };
+      case 'getGeofences': return { success: true, zones: [
+        { zoneID: 'GEO-001', name: 'Home', latitude: 25.396, longitude: 68.358, radius: 200, color: '#22c55e', active: true },
+        { zoneID: 'GEO-002', name: 'School', latitude: 25.403, longitude: 68.362, radius: 150, color: '#6366f1', active: true },
+        { zoneID: 'GEO-003', name: 'Office', latitude: 25.390, longitude: 68.352, radius: 100, color: '#f97316', active: true }
+      ]};
+      case 'getSOSAlerts': return { success: true, alerts: [] };
+      case 'getHistory': return { success: true, history: generateDemoHistory() };
+      case 'getNotifications': return { success: true, notifications: [
+        { notifID: 'NTF-1', type: 'info', message: 'Fatima came online', timestamp: new Date().toISOString(), read: false },
+        { notifID: 'NTF-2', type: 'zone', message: 'Omar entered Home zone', timestamp: new Date(Date.now()-300000).toISOString(), read: true }
+      ]};
+      case 'getReports': return { success: true, report: generateDemoReport() };
+      case 'sendSOS': return { success: true, sosID: 'SOS-DEMO-1' };
+      case 'addGeofence': return { success: true, zoneID: 'GEO-NEW' };
+      case 'deleteGeofence': return { success: true };
+      case 'addMember': return { success: true, userID: 'USR-NEW' };
+      case 'deleteMember': return { success: true };
+      case 'updateProfile': return { success: true };
+      default: return { success: true };
+    }
+  });
+}
+
+function generateDemoHistory() {
+  const hist = [];
+  const now = Date.now();
+  for (let i = 0; i < 20; i++) {
+    hist.push({
+      historyID: 'HIS-' + i,
+      userID: DEMO_MEMBERS[i % 4].userID,
+      latitude: (25.396 + (Math.random()-0.5)*0.02).toFixed(6),
+      longitude: (68.358 + (Math.random()-0.5)*0.02).toFixed(6),
+      speed: (Math.random()*60).toFixed(1),
+      timestamp: new Date(now - i * 600000).toISOString(),
+      date: new Date(now - i * 600000).toISOString().split('T')[0]
+    });
+  }
+  return hist;
+}
+
+function generateDemoReport() {
+  const rep = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
+    rep.push({ date: d, points: Math.floor(Math.random()*80+20), maxSpeed: (Math.random()*80).toFixed(1) });
+  }
+  return rep;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigateTo(view) {
+  APP.currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + view);
+  if (el) el.classList.add('active');
+
+  // Sidebar active
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === view);
+  });
+  document.querySelectorAll('.bottom-nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === view);
+  });
+
+  // Close sidebar on mobile
+  if (window.innerWidth <= 768) closeSidebar();
+
+  // Load view data
+  switch(view) {
+    case 'dashboard': loadDashboard(); break;
+    case 'tracking': loadLocations(); break;
+    case 'members': loadMembers(); break;
+    case 'history': loadHistory(); loadMembersDropdown(); break;
+    case 'geofencing': loadGeofences(); break;
+    case 'sos': loadSOSAlerts(); break;
+    case 'reports': loadMembersDropdown('report-member'); break;
+    case 'settings': break;
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  setDashboardGreeting();
+  try {
+    const [locRes, membersRes, geoRes, sosRes] = await Promise.all([
+      apiCall({ action: 'getLocations' }),
+      apiCall({ action: 'getMembers' }),
+      apiCall({ action: 'getGeofences' }),
+      apiCall({ action: 'getSOSAlerts' })
+    ]);
+
+    const locations = locRes.locations || [];
+    const members = membersRes.members || [];
+    const zones = geoRes.zones || [];
+    const alerts = sosRes.alerts || [];
+
+    const onlineCount = locations.filter(l => l.isOnline).length;
+    const activeSOS = alerts.filter(a => a.status === 'active').length;
+
+    document.getElementById('stat-total').textContent = members.length;
+    document.getElementById('stat-online').textContent = onlineCount;
+    document.getElementById('stat-zones').textContent = zones.length;
+    document.getElementById('stat-sos').textContent = activeSOS;
+
+    if (activeSOS > 0) {
+      document.getElementById('sos-nav-badge').textContent = activeSOS;
+      document.getElementById('sos-nav-badge').style.display = '';
+    }
+
+    // Dashboard members list
+    const container = document.getElementById('dash-members-list');
+    if (locations.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-satellite-dish"></i><h3>No location data</h3><p>Members haven\'t shared their location yet</p></div>';
+      return;
+    }
+
+    container.innerHTML = locations.slice(0,6).map((loc, i) => `
+      <div class="member-list-item" onclick="navigateTo('tracking')">
+        <div class="member-list-avatar" style="background:${MEMBER_COLORS[i%MEMBER_COLORS.length]}">${loc.name.charAt(0)}</div>
+        <div style="flex:1">
+          <div class="ml-name">${loc.name}</div>
+          <div class="ml-meta">
+            <span class="status-dot ${loc.isOnline ? 'online' : 'offline'}"></span>
+            ${loc.isOnline ? 'Online' : loc.minsAgo + ' min ago'}
+            ${loc.speed > 0 ? ` · ${parseFloat(loc.speed).toFixed(0)} km/h` : ''}
+          </div>
+        </div>
+        <div class="battery-indicator">
+          <i class="fas fa-battery-${getBatteryIcon(loc.battery)}" style="color:${getBatteryColor(loc.battery)}"></i>
+          ${loc.battery}%
+        </div>
+      </div>
+    `).join('');
+
+  } catch(e) {
+    console.error('Dashboard load error:', e);
+  }
+}
+
+// ============================================================
+// LIVE TRACKING
+// ============================================================
+async function loadLocations() {
+  const listEl = document.getElementById('tracking-member-list');
+  listEl.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const res = await apiCall({ action: 'getLocations' });
+    const locations = res.locations || [];
+
+    if (locations.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><i class="fas fa-satellite-dish"></i><h3>No data</h3><p>No location updates yet</p></div>';
+      return;
+    }
+
+    listEl.innerHTML = locations.map((loc, i) => `
+      <div class="member-list-item" onclick="selectMemberOnMap('${loc.userID}', ${loc.latitude}, ${loc.longitude})">
+        <div class="member-list-avatar" style="background:${MEMBER_COLORS[i%MEMBER_COLORS.length]}">${loc.name.charAt(0)}</div>
+        <div style="flex:1">
+          <div class="ml-name">${loc.name}</div>
+          <div class="ml-meta" style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot ${loc.isOnline ? 'online' : 'offline'}"></span>
+            ${loc.isOnline ? '<span style="color:var(--green)">Live</span>' : loc.minsAgo + 'm ago'}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="battery-indicator" style="justify-content:flex-end">
+            <i class="fas fa-battery-${getBatteryIcon(loc.battery)}" style="color:${getBatteryColor(loc.battery)};font-size:13px"></i>
+            <span style="font-size:12px">${loc.battery}%</span>
+          </div>
+          ${loc.speed > 0 ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${parseFloat(loc.speed).toFixed(0)} km/h</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    // Update map markers
+    if (APP.mapInstance) updateMapMarkers(locations);
+
+  } catch(e) {
+    listEl.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error loading locations</h3></div>';
+  }
+}
+
+function selectMemberOnMap(userID, lat, lng, name) {
+  document.querySelectorAll('.member-list-item').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  document.getElementById('selected-member-detail').style.display = 'block';
+  document.getElementById('selected-member-content').innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div><div class="text-muted text-sm">Latitude</div><div class="fw-600">${lat}</div></div>
+      <div><div class="text-muted text-sm">Longitude</div><div class="fw-600">${lng}</div></div>
+    </div>
+    <div style="margin-top:10px">
+      <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-ghost btn-sm" style="width:auto">
+        <i class="fas fa-external-link-alt"></i> Open in Google Maps
+      </a>
+    </div>
+  `;
+
+  if (APP.mapInstance) {
+    APP.mapInstance.setCenter({ lat: parseFloat(lat), lng: parseFloat(lng) });
+    APP.mapInstance.setZoom(16);
+  }
+}
+
+// ============================================================
+// MEMBERS
+// ============================================================
+async function loadMembers() {
+  const grid = document.getElementById('members-grid');
+  grid.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const [membersRes, locRes] = await Promise.all([
+      apiCall({ action: 'getMembers' }),
+      apiCall({ action: 'getLocations' })
+    ]);
+
+    const members = membersRes.members || [];
+    const locs = (locRes.locations || []).reduce((acc, l) => { acc[l.userID] = l; return acc; }, {});
+
+    if (members.length === 0) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-users"></i><h3>No members yet</h3><p>Add family members to track</p></div>';
+      return;
+    }
+
+    grid.innerHTML = members.filter(m => m.status !== 'deleted').map((m, i) => {
+      const loc = locs[m.userID];
+      const isOnline = loc && loc.isOnline;
+      return `
+      <div class="member-card" onclick="viewMemberDetail('${m.userID}')">
+        <div class="member-card-top">
+          <div class="member-avatar-lg" style="background:${MEMBER_COLORS[i%MEMBER_COLORS.length]}">${m.name.charAt(0)}</div>
+          <div>
+            <div class="member-name">${m.name}</div>
+            <div class="member-role-badge role-${m.role}">${m.role === 'superadmin' ? '👑 Super Admin' : '👤 Member'}</div>
+          </div>
+        </div>
+        <div class="member-status">
+          <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
+          <span style="color:${isOnline ? 'var(--green)' : 'var(--text-muted)'}">${isOnline ? 'Online' : loc ? loc.minsAgo + ' min ago' : 'Never'}</span>
+        </div>
+        ${m.mobile ? `<div class="member-info-row"><i class="fas fa-phone" style="width:14px"></i> ${m.mobile}</div>` : ''}
+        ${m.email ? `<div class="member-info-row"><i class="fas fa-envelope" style="width:14px"></i> ${m.email}</div>` : ''}
+        ${loc ? `
+        <div style="margin-top:8px">
+          <div class="progress-bar" style="margin-bottom:4px">
+            <div class="progress-fill" style="width:${loc.battery}%;background:${getBatteryColor(loc.battery)}"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted)">Battery: ${loc.battery}%</div>
+        </div>` : ''}
+        <div class="member-actions">
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();trackMember('${m.userID}')">
+            <i class="fas fa-map-location-dot"></i> Track
+          </button>
+          ${APP.user.role === 'superadmin' && m.userID !== APP.user.userID ? `
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteMember('${m.userID}', '${m.name}')">
+            <i class="fas fa-trash"></i>
+          </button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    grid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Failed to load members</h3></div>';
+  }
+}
+
+function viewMemberDetail(userID) {
+  navigateTo('tracking');
+}
+
+function trackMember(userID) {
+  navigateTo('tracking');
+}
+
+function showAddMemberModal() {
+  showModal(`
+    <div class="modal-title">
+      <span>Add Family Member</span>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Full Name *</label>
+      <input type="text" id="m-name" class="form-input" placeholder="Ahmed Ali"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mobile *</label>
+      <input type="text" id="m-mobile" class="form-input" placeholder="03001234567"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="m-email" class="form-input"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password *</label>
+      <input type="password" id="m-pass" class="form-input" placeholder="Minimum 6 characters"/>
+    </div>
+    <button class="btn btn-primary" onclick="doAddMember()">
+      <i class="fas fa-user-plus"></i> Add Member
+    </button>
+  `);
+}
+
+async function doAddMember() {
+  const name = document.getElementById('m-name').value.trim();
+  const mobile = document.getElementById('m-mobile').value.trim();
+  const email = document.getElementById('m-email').value.trim();
+  const password = document.getElementById('m-pass').value;
+  if (!name || !mobile || !password) return showToast('Fill required fields', 'warning');
+  try {
+    const res = await apiCall({ action: 'addMember', name, mobile, email, password });
+    if (res.error) return showToast(res.error, 'error');
+    showToast(`${name} added successfully!`, 'success');
+    closeModal();
+    loadMembers();
+  } catch(e) { showToast('Failed to add member', 'error'); }
+}
+
+function confirmDeleteMember(userID, name) {
+  showModal(`
+    <div class="modal-title"><span style="color:var(--red)">Remove Member</span>
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
+    <p style="margin-bottom:20px;color:var(--text-secondary)">Remove <strong>${name}</strong> from your family? Their location data will be retained.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-danger" onclick="doDeleteMember('${userID}')"><i class="fas fa-trash"></i> Remove</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+async function doDeleteMember(userID) {
+  try {
+    await apiCall({ action: 'deleteMember', userID });
+    showToast('Member removed', 'success');
+    closeModal();
+    loadMembers();
+  } catch(e) { showToast('Failed to remove member', 'error'); }
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+async function loadHistory() {
+  const tbody = document.getElementById('history-tbody');
+  const memberFilter = document.getElementById('hist-member-filter').value;
+  const dateFilter = document.getElementById('hist-date-filter').value;
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading-spinner"></div></td></tr>';
+  try {
+    const [histRes, membersRes] = await Promise.all([
+      apiCall({ action: 'getHistory', userID: memberFilter, date: dateFilter }),
+      apiCall({ action: 'getMembers' })
+    ]);
+    const hist = histRes.history || [];
+    const memberMap = (membersRes.members || []).reduce((acc, m) => { acc[m.userID] = m.name; return acc; }, {});
+
+    if (hist.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">No location records found</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = hist.map(h => `
+      <tr>
+        <td><strong>${memberMap[h.userID] || h.userID}</strong></td>
+        <td style="font-family:monospace;font-size:13px">${parseFloat(h.latitude).toFixed(6)}</td>
+        <td style="font-family:monospace;font-size:13px">${parseFloat(h.longitude).toFixed(6)}</td>
+        <td>${parseFloat(h.speed||0).toFixed(1)} km/h</td>
+        <td style="color:var(--text-secondary)">${new Date(h.timestamp).toLocaleTimeString()}</td>
+        <td style="color:var(--text-secondary)">${h.date}</td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Error loading history</td></tr>';
+  }
+}
+
+async function loadMembersDropdown(selectId = 'hist-member-filter') {
+  try {
+    const res = await apiCall({ action: 'getMembers' });
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All Members</option>' +
+      (res.members || []).map(m => `<option value="${m.userID}" ${m.userID===current?'selected':''}>${m.name}</option>`).join('');
+  } catch(e) {}
+}
+
+function exportHistory() {
+  showToast('Generating CSV export...', 'info');
+  setTimeout(() => {
+    const rows = document.querySelectorAll('#history-tbody tr');
+    if (!rows.length || rows[0].cells.length < 2) return showToast('No data to export', 'warning');
+    let csv = 'Member,Latitude,Longitude,Speed,Time,Date\n';
+    rows.forEach(row => {
+      const cells = Array.from(row.cells).map(c => c.textContent.trim());
+      if (cells.length >= 6) csv += cells.join(',') + '\n';
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `location-history-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    showToast('Exported!', 'success');
+  }, 500);
+}
+
+// ============================================================
+// GEOFENCING
+// ============================================================
+async function loadGeofences() {
+  const grid = document.getElementById('geofence-grid');
+  grid.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const res = await apiCall({ action: 'getGeofences' });
+    const zones = res.zones || [];
+    if (zones.length === 0) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <i class="fas fa-shield-halved"></i><h3>No safe zones</h3>
+        <p>Create geofence zones to get alerts</p>
+        <button class="btn btn-primary btn-sm mt-4" onclick="showAddZoneModal()"><i class="fas fa-plus"></i> Add Zone</button>
+      </div>`;
+      return;
+    }
+    const zoneIcons = { Home:'🏠', School:'🏫', Office:'🏢', Village:'🏡' };
+    grid.innerHTML = zones.map(z => `
+      <div class="geofence-card">
+        <div class="geofence-icon" style="background:${z.color}25;color:${z.color}">
+          ${zoneIcons[z.name] || '📍'}
+        </div>
+        <div class="geofence-name">${z.name}</div>
+        <div class="geofence-meta">
+          <i class="fas fa-circle-dot"></i> ${z.latitude}, ${z.longitude}<br>
+          <i class="fas fa-maximize"></i> Radius: ${z.radius}m
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <a href="https://www.google.com/maps?q=${z.latitude},${z.longitude}" target="_blank"
+             class="btn btn-ghost btn-sm"><i class="fas fa-map"></i> View</a>
+          ${APP.user.role === 'superadmin' ? `
+          <button class="btn btn-danger btn-sm" onclick="deleteZone('${z.zoneID}')"><i class="fas fa-trash"></i></button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    grid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Failed to load zones</h3></div>';
+  }
+}
+
+function showAddZoneModal() {
+  showModal(`
+    <div class="modal-title">
+      <span>Add Safe Zone</span>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Zone Name *</label>
+      <select id="z-name-select" class="form-input" onchange="document.getElementById('z-name-custom').style.display=this.value==='Custom'?'block':'none'">
+        <option>Home</option><option>School</option><option>Office</option><option>Village</option><option>Custom</option>
+      </select>
+    </div>
+    <div class="form-group" id="z-name-custom" style="display:none">
+      <label class="form-label">Custom Name</label>
+      <input type="text" id="z-name-input" class="form-input" placeholder="Zone name"/>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Latitude *</label>
+        <input type="number" id="z-lat" class="form-input" placeholder="25.3960" step="0.000001"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Longitude *</label>
+        <input type="number" id="z-lng" class="form-input" placeholder="68.3578" step="0.000001"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Radius (meters) *</label>
+      <input type="number" id="z-radius" class="form-input" value="200" min="50" max="5000"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Zone Color</label>
+      <input type="color" id="z-color" class="form-input" value="#22c55e" style="height:48px;cursor:pointer"/>
+    </div>
+    <button class="btn btn-ghost btn-sm mb-4" onclick="useMyLocation('z-lat','z-lng')">
+      <i class="fas fa-location-crosshairs"></i> Use My Current Location
+    </button>
+    <br>
+    <button class="btn btn-primary" onclick="doAddZone()"><i class="fas fa-plus"></i> Create Zone</button>
+  `);
+}
+
+function useMyLocation(latId, lngId) {
+  if (!navigator.geolocation) return showToast('Geolocation not supported', 'error');
+  navigator.geolocation.getCurrentPosition(pos => {
+    document.getElementById(latId).value = pos.coords.latitude.toFixed(6);
+    document.getElementById(lngId).value = pos.coords.longitude.toFixed(6);
+    showToast('Location captured!', 'success');
+  }, () => showToast('Could not get location', 'error'));
+}
+
+async function doAddZone() {
+  const nameSelect = document.getElementById('z-name-select').value;
+  const name = nameSelect === 'Custom' ? document.getElementById('z-name-input').value.trim() : nameSelect;
+  const latitude = document.getElementById('z-lat').value;
+  const longitude = document.getElementById('z-lng').value;
+  const radius = document.getElementById('z-radius').value;
+  const color = document.getElementById('z-color').value;
+  if (!name || !latitude || !longitude) return showToast('Fill required fields', 'warning');
+  try {
+    await apiCall({ action: 'addGeofence', name, latitude, longitude, radius, color, createdBy: APP.user.userID });
+    showToast('Zone created!', 'success');
+    closeModal();
+    loadGeofences();
+  } catch(e) { showToast('Failed to create zone', 'error'); }
+}
+
+async function deleteZone(zoneID) {
+  if (!confirm('Delete this geofence zone?')) return;
+  try {
+    await apiCall({ action: 'deleteGeofence', zoneID });
+    showToast('Zone deleted', 'success');
+    loadGeofences();
+  } catch(e) { showToast('Failed to delete zone', 'error'); }
+}
+
+// ============================================================
+// SOS
+// ============================================================
+let sosHoldTimer = null;
+function sendSOSAlert() {
+  if (!navigator.geolocation) return showToast('Geolocation required for SOS', 'error');
+  showModal(`
+    <div class="modal-title">
+      <span style="color:var(--red)"><i class="fas fa-triangle-exclamation"></i> Send Emergency Alert</span>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <p style="margin-bottom:16px;color:var(--text-secondary)">This will immediately alert all family members with your current location.</p>
+    <div class="form-group">
+      <label class="form-label">Message (optional)</label>
+      <input type="text" id="sos-msg" class="form-input" placeholder="Need help! Call me."/>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-danger" onclick="doSendSOS()"><i class="fas fa-sos"></i> Send SOS NOW</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+async function doSendSOS() {
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const msg = document.getElementById('sos-msg')?.value || 'Emergency!';
+    try {
+      await apiCall({
+        action: 'sendSOS', userID: APP.user.userID,
+        latitude: pos.coords.latitude, longitude: pos.coords.longitude, message: msg
+      });
+      showToast('🆘 SOS sent to all family members!', 'error');
+      closeModal();
+      loadSOSAlerts();
+      // Browser notification
+      if (Notification.permission === 'granted') {
+        new Notification('SOS Alert Sent', { body: 'Your emergency alert has been sent to all family members.' });
+      }
+    } catch(e) { showToast('Failed to send SOS', 'error'); }
+  }, () => showToast('Could not get location for SOS', 'error'), { enableHighAccuracy: true });
+}
+
+async function loadSOSAlerts() {
+  const list = document.getElementById('sos-alerts-list');
+  if (!list) return;
+  list.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const res = await apiCall({ action: 'getSOSAlerts' });
+    const alerts = res.alerts || [];
+    if (alerts.length === 0) {
+      list.innerHTML = '<div class="empty-state"><i class="fas fa-shield-check" style="color:var(--green)"></i><h3>All clear</h3><p>No active emergency alerts</p></div>';
+      return;
+    }
+    list.innerHTML = alerts.map(a => `
+      <div class="sos-alert-card ${a.status==='resolved'?'resolved':''}">
+        <div class="sos-icon">${a.status==='active' ? '🆘' : '✅'}</div>
+        <div style="flex:1">
+          <div style="font-weight:600">${a.name}</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:2px">${a.message}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
+            ${new Date(a.timestamp).toLocaleString()}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <a href="https://www.google.com/maps?q=${a.latitude},${a.longitude}" target="_blank" class="btn btn-ghost btn-sm">
+              <i class="fas fa-map"></i> View Location
+            </a>
+            ${a.status==='active' ? `<button class="btn btn-primary btn-sm" onclick="resolveAlert('${a.sosID}')"><i class="fas fa-check"></i> Resolve</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation"></i><h3>Error loading alerts</h3></div>';
+  }
+}
+
+async function resolveAlert(sosID) {
+  try {
+    await apiCall({ action: 'resolveSOSAlert', sosID });
+    showToast('Alert resolved', 'success');
+    loadSOSAlerts();
+  } catch(e) { showToast('Failed to resolve', 'error'); }
+}
+
+// ============================================================
+// REPORTS
+// ============================================================
+async function loadReports() {
+  const userID = document.getElementById('report-member').value;
+  const tbody = document.getElementById('report-tbody');
+  tbody.innerHTML = '<tr><td colspan="4"><div class="loading-spinner"></div></td></tr>';
+  try {
+    const res = await apiCall({ action: 'getReports', userID });
+    const report = res.report || [];
+    if (report.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:30px">No activity data</td></tr>';
+      return;
+    }
+    const totalPoints = report.reduce((s, r) => s + r.points, 0);
+    document.getElementById('report-stats').innerHTML = `
+      <div class="stat-card accent"><div class="stat-icon"><i class="fas fa-calendar-days"></i></div>
+        <div class="stat-value">${report.length}</div><div class="stat-label">Active Days</div></div>
+      <div class="stat-card green"><div class="stat-icon"><i class="fas fa-location-dot"></i></div>
+        <div class="stat-value">${totalPoints}</div><div class="stat-label">Total Points</div></div>
+      <div class="stat-card orange"><div class="stat-icon"><i class="fas fa-gauge-high"></i></div>
+        <div class="stat-value">${Math.max(...report.map(r=>parseFloat(r.maxSpeed||0))).toFixed(0)}</div><div class="stat-label">Max Speed (km/h)</div></div>
+    `;
+    tbody.innerHTML = report.map(r => {
+      const activity = r.points > 50 ? '<span class="chip chip-green">High</span>' : r.points > 20 ? '<span class="chip chip-yellow">Medium</span>' : '<span class="chip chip-blue">Low</span>';
+      return `<tr>
+        <td>${r.date}</td>
+        <td><strong>${r.points}</strong></td>
+        <td>${parseFloat(r.maxSpeed||0).toFixed(1)} km/h</td>
+        <td>${activity}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--red)">Error loading reports</td></tr>';
+  }
+}
+
+// ============================================================
+// LOCATION TRACKING
+// ============================================================
+function startLocationTracking() {
+  if (!navigator.geolocation) return;
+  const interval = parseInt(APP.settings.updateInterval || 30) * 1000;
+
+  const sendLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const battery = navigator.getBattery ? null : 100;
+        if (navigator.getBattery) {
+          navigator.getBattery().then(b => {
+            postLocation(pos, Math.round(b.level * 100));
+          });
+        } else {
+          postLocation(pos, 100);
+        }
+      },
+      err => console.log('GPS error:', err),
+      { enableHighAccuracy: APP.settings.highAccuracy !== false, timeout: 10000 }
+    );
+  };
+
+  sendLocation();
+  APP.locationInterval = setInterval(sendLocation, interval);
+}
+
+async function postLocation(pos, battery) {
+  try {
+    await apiCall({
+      action: 'updateLocation',
+      userID: APP.user.userID,
+      latitude: pos.coords.latitude,
+      longitude: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+      speed: pos.coords.speed || 0,
+      battery: battery || 100
+    });
+  } catch(e) {} // Silent fail, will retry next interval
+}
+
+function locateMe() {
+  if (!navigator.geolocation) return showToast('Geolocation not supported', 'error');
+  navigator.geolocation.getCurrentPosition(pos => {
+    if (APP.mapInstance) {
+      APP.mapInstance.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      APP.mapInstance.setZoom(17);
+    }
+    showToast('Centered on your location', 'success');
+  }, () => showToast('Could not get location', 'error'));
+}
+
+function toggleMapType() {
+  if (!APP.mapInstance) return;
+  APP.mapType = APP.mapType === 'roadmap' ? 'satellite' : 'roadmap';
+  APP.mapInstance.setMapTypeId(APP.mapType);
+}
+
+function fitAllMarkers() {
+  if (!APP.mapInstance || !Object.keys(APP.mapMarkers).length) return;
+  const bounds = new google.maps.LatLngBounds();
+  Object.values(APP.mapMarkers).forEach(m => bounds.extend(m.getPosition()));
+  APP.mapInstance.fitBounds(bounds);
+}
+
+function updateMapMarkers(locations) {
+  if (!APP.mapInstance) return;
+  locations.forEach((loc, i) => {
+    const pos = { lat: parseFloat(loc.latitude), lng: parseFloat(loc.longitude) };
+    if (APP.mapMarkers[loc.userID]) {
+      APP.mapMarkers[loc.userID].setPosition(pos);
+    } else {
+      const marker = new google.maps.Marker({
+        position: pos, map: APP.mapInstance, title: loc.name,
+        label: { text: loc.name.charAt(0), color: 'white', fontWeight: 'bold' },
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 18,
+          fillColor: MEMBER_COLORS[i % MEMBER_COLORS.length], fillOpacity: 1,
+          strokeColor: 'white', strokeWeight: 2 }
+      });
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div style="font-family:Inter,sans-serif;padding:8px">
+          <strong>${loc.name}</strong><br>
+          🔋 ${loc.battery}% · ${loc.speed > 0 ? loc.speed + ' km/h' : 'Stationary'}<br>
+          <small style="color:#666">${new Date(loc.timestamp).toLocaleTimeString()}</small>
+        </div>`
+      });
+      marker.addListener('click', () => infoWindow.open(APP.mapInstance, marker));
+      APP.mapMarkers[loc.userID] = marker;
+    }
+  });
+}
+
+// ============================================================
+// GOOGLE MAPS
+// ============================================================
+function loadGoogleMaps() {
+  if (!APP.mapsKey || document.getElementById('gmaps-script')) return;
+  const script = document.createElement('script');
+  script.id = 'gmaps-script';
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${APP.mapsKey}&callback=initMap`;
+  script.async = true;
+  document.head.appendChild(script);
+}
+
+window.initMap = function() {
+  const center = { lat: 25.3960, lng: 68.3578 }; // Hyderabad default
+  const mapStyle = [
+    { elementType: 'geometry', stylers: [{ color: '#1a1a2e' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#8ec3b9' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] }
+  ];
+
+  const mapEl = document.getElementById('map');
+  mapEl.style.display = 'block';
+  mapEl.innerHTML = '';
+
+  APP.mapInstance = new google.maps.Map(mapEl, {
+    center, zoom: 13, disableDefaultUI: true,
+    styles: document.documentElement.getAttribute('data-theme') === 'dark' ? mapStyle : [],
+    gestureHandling: 'greedy'
+  });
+
+  // Also init dash map
+  const dashMapEl = document.getElementById('dash-map');
+  if (dashMapEl) {
+    dashMapEl.innerHTML = '';
+    new google.maps.Map(dashMapEl, {
+      center, zoom: 13, disableDefaultUI: true,
+      styles: document.documentElement.getAttribute('data-theme') === 'dark' ? mapStyle : []
+    });
+  }
+
+  showToast('Google Maps loaded!', 'success');
+  loadLocations();
+};
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function toggleNotifPanel() {
+  document.getElementById('notif-panel').classList.toggle('open');
+  if (document.getElementById('notif-panel').classList.contains('open')) {
+    loadNotifications();
+  }
+}
+
+async function loadNotifications() {
+  try {
+    const res = await apiCall({ action: 'getNotifications', userID: APP.user.userID });
+    const notifs = res.notifications || [];
+    const unread = notifs.filter(n => !n.read).length;
+
+    const badge = document.getElementById('notif-count');
+    if (unread > 0) {
+      badge.textContent = unread;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+
+    const list = document.getElementById('notif-list');
+    if (notifs.length === 0) {
+      list.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><h3>No notifications</h3><p>You\'re all caught up!</p></div>';
+      return;
+    }
+    list.innerHTML = notifs.map(n => `
+      <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="markRead('${n.notifID}', this)">
+        <div class="notif-type">${n.type.toUpperCase()}</div>
+        <div class="notif-msg">${n.message}</div>
+        <div class="notif-time">${timeAgo(n.timestamp)}</div>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+function markRead(notifID, el) {
+  el.classList.remove('unread');
+  apiCall({ action: 'markNotifRead', notifID }).catch(() => {});
+}
+
+function requestNotifPermission() {
+  if (!('Notification' in window)) return showToast('Notifications not supported', 'warning');
+  Notification.requestPermission().then(perm => {
+    const toggle = document.getElementById('notif-toggle');
+    if (perm === 'granted') {
+      toggle.classList.add('on');
+      showToast('Notifications enabled!', 'success');
+      new Notification('Family Tracker Pro', { body: 'Notifications are now enabled!' });
+    } else {
+      toggle.classList.remove('on');
+      showToast('Notification permission denied', 'warning');
+    }
+  });
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function saveGasUrl() {
+  const url = document.getElementById('gas-url-input').value.trim();
+  if (!url) return showToast('Enter a valid URL', 'warning');
+  APP.gasUrl = url;
+  localStorage.setItem('gasUrl', url);
+  // Config banner update
+  const banner = document.getElementById('config-status-banner');
+  const preview = document.getElementById('config-url-preview');
+  if (banner && preview) { banner.style.display='flex'; preview.textContent = url.substring(0,60)+'...'; }
+  showToast('Testing connection...', 'info');
+  fetch(url + '?action=test').then(() => showToast('Connected successfully!', 'success')).catch(() => {
+    // Try init
+    apiCall({ action: 'init' }).then(r => {
+      if (r.success) showToast('Backend connected & initialized!', 'success');
+      else showToast('URL saved (verify manually)', 'warning');
+    }).catch(() => showToast('Could not reach the URL. Check it and try again.', 'error'));
+  });
+}
+
+function saveMapsKey() {
+  const key = document.getElementById('maps-key-input').value.trim();
+  if (!key) return showToast('Enter your Maps API key', 'warning');
+  APP.mapsKey = key;
+  localStorage.setItem('mapsKey', key);
+  loadGoogleMaps();
+  showToast('Maps key saved! Loading map...', 'success');
+}
+
+function toggleSetting(el, key) {
+  el.classList.toggle('on');
+  APP.settings[key] = el.classList.contains('on');
+  localStorage.setItem('appSettings', JSON.stringify(APP.settings));
+  showToast(`${key} ${APP.settings[key] ? 'enabled' : 'disabled'}`, 'success');
+}
+
+async function saveProfile() {
+  const name = document.getElementById('profile-name').value.trim();
+  const mobile = document.getElementById('profile-mobile').value.trim();
+  const email = document.getElementById('profile-email').value.trim();
+  const homeAddress = document.getElementById('profile-home').value.trim();
+  try {
+    await apiCall({ action: 'updateProfile', userID: APP.user.userID, name, mobile, email, homeAddress });
+    APP.user.name = name;
+    localStorage.setItem('authUser', JSON.stringify(APP.user));
+    document.getElementById('topbar-name').textContent = name;
+    document.getElementById('topbar-avatar').textContent = name.charAt(0);
+    showToast('Profile updated!', 'success');
+  } catch(e) { showToast('Failed to update profile', 'error'); }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  document.getElementById('theme-icon').className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+  const darkToggle = document.getElementById('dark-mode-toggle');
+  if (darkToggle) darkToggle.classList.toggle('on', next === 'dark');
+}
+
+// ============================================================
+// REFRESH
+// ============================================================
+async function refreshAll() {
+  await Promise.all([
+    loadDashboard(),
+    loadNotifications()
+  ]).catch(() => {});
+}
+
+function refreshLiveData() {
+  if (APP.currentView === 'tracking') loadLocations();
+  if (APP.currentView === 'dashboard') loadDashboard();
+  loadNotifications();
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function showModal(content) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'active-modal';
+  overlay.innerHTML = `<div class="modal">${content}</div>`;
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.getElementById('modal-container').appendChild(overlay);
+}
+
+function closeModal() {
+  const modal = document.getElementById('active-modal');
+  if (modal) modal.remove();
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(message, type = 'info') {
+  const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="fas ${icons[type]} toast-icon"></i><span>${message}</span>`;
+  document.getElementById('toast-container').appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3500);
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function getBatteryIcon(level) {
+  if (level > 75) return 'full';
+  if (level > 50) return 'three-quarters';
+  if (level > 25) return 'half';
+  if (level > 10) return 'quarter';
+  return 'empty';
+}
+
+function getBatteryColor(level) {
+  if (level > 50) return 'var(--green)';
+  if (level > 20) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function timeAgo(timestamp) {
+  const diff = Date.now() - new Date(timestamp).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs/24)}d ago`;
+}
+
+// Install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install button if you have one
+});
+
+// Handle URL params
+const urlParams = new URLSearchParams(location.search);
+if (urlParams.get('view')) {
+  window.addEventListener('load', () => setTimeout(() => navigateTo(urlParams.get('view')), 3000));
+}
+
+console.log(`
+╔═══════════════════════════════════════╗
+║      Family Tracker Pro v1.0          ║
+║  Built with Google Apps Script +      ║
+║  GitHub Pages PWA                     ║
+╚═══════════════════════════════════════╝
+`);
+</script>
+</body>
+</html>
