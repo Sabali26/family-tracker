@@ -11,13 +11,14 @@ const FT_CONFIG = {
   // Deploy karne ke baad milti hai yeh URL
   // Format: https://script.google.com/macros/s/XXXXX/exec
   // ─────────────────────────────────────────────
-  GAS_URL: "https://script.google.com/macros/s/AKfycbym9y5LsG3RDlB0c9ZGQ3yLAD2fduzWPxqiKZboGok9poT_EI4hv0WupQm59B2rAfl3JA/exec",
+  GAS_URL: "https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec",
 
   // ─────────────────────────────────────────────
-  // 🗺️ GOOGLE MAPS API KEY (optional)
-  // https://console.cloud.google.com sy milti hai
+  // 🗺️ MAP STYLE — Default tile layer
+  // Options: "osm" | "satellite" | "topo" | "dark"
+  // Koi API key nahi chahiye! OpenStreetMap FREE hai
   // ─────────────────────────────────────────────
-  MAPS_API_KEY: "",
+  MAP_STYLE: "osm",
 
   // ─────────────────────────────────────────────
   // ⏱️ LOCATION UPDATE INTERVAL (seconds)
@@ -76,11 +77,6 @@ const FT_CONFIG = {
   } else {
     localStorage.setItem('gasUrl', FT_CONFIG.GAS_URL);
     console.log("[FamilyTracker] ✅ GAS URL config se load hui:", FT_CONFIG.GAS_URL);
-  }
-
-  if (FT_CONFIG.MAPS_API_KEY) {
-    localStorage.setItem('mapsKey', FT_CONFIG.MAPS_API_KEY);
-    console.log("[FamilyTracker] ✅ Maps API Key config se load hui");
   }
 
   localStorage.setItem('theme', FT_CONFIG.DEFAULT_THEME);

@@ -13,6 +13,9 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <script src="config.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
@@ -772,6 +775,33 @@ tbody tr:last-child td { border-bottom: none; }
 .text-sm { font-size: 13px; }
 .text-muted { color: var(--text-secondary); }
 .fw-600 { font-weight: 600; }
+
+/* ===== LEAFLET MAP OVERRIDES ===== */
+.leaflet-container {
+  background: var(--bg-secondary) !important;
+  font-family: var(--font-body) !important;
+}
+.leaflet-popup-content-wrapper {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow) !important;
+}
+.leaflet-popup-tip { background: var(--bg-card) !important; }
+.leaflet-popup-close-button { color: var(--text-secondary) !important; }
+.leaflet-control-zoom a {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+.leaflet-control-zoom a:hover { background: var(--accent) !important; color: white !important; }
+.leaflet-bar { border: none !important; box-shadow: var(--shadow) !important; border-radius: 10px !important; overflow: hidden; }
+.leaflet-control-attribution {
+  background: rgba(0,0,0,0.5) !important;
+  color: #aaa !important; font-size: 10px !important;
+}
+.leaflet-control-attribution a { color: var(--accent-light) !important; }
 </style>
 </head>
 <body>
@@ -989,13 +1019,7 @@ tbody tr:last-child td { border-bottom: none; }
         <!-- Quick Map -->
         <div class="card mb-4">
           <div class="card-title"><i class="fas fa-map"></i> Live Overview</div>
-          <div id="dash-map" style="height:320px;border-radius:10px;overflow:hidden;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
-            <div style="text-align:center">
-              <i class="fas fa-map-location-dot" style="font-size:48px;margin-bottom:12px;display:block"></i>
-              <div>Configure Google Maps API key in Settings</div>
-              <div style="font-size:12px;margin-top:4px">or <a href="#" onclick="navigateTo('tracking')" style="color:var(--accent-light)">go to Live Tracking</a></div>
-            </div>
-          </div>
+          <div id="dash-map" style="height:320px;border-radius:10px;overflow:hidden;"></div>
         </div>
 
         <!-- Members Overview -->
@@ -1035,16 +1059,7 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
           <div style="display:flex;flex-direction:column;gap:16px">
             <div class="map-container">
-              <div id="map" style="background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
-                <div style="text-align:center">
-                  <i class="fas fa-map" style="font-size:56px;display:block;margin-bottom:16px"></i>
-                  <div style="font-size:16px;font-weight:500">Google Maps</div>
-                  <div style="font-size:13px;margin-top:4px">Add your API key in Settings → Maps to enable</div>
-                  <button class="btn btn-primary btn-sm mt-4" onclick="navigateTo('settings')">
-                    <i class="fas fa-gear"></i> Configure Now
-                  </button>
-                </div>
-              </div>
+              <div id="map"></div>
               <div class="map-controls-panel">
                 <div class="map-ctrl-btn" onclick="locateMe()" title="My Location"><i class="fas fa-crosshairs"></i></div>
                 <div class="map-ctrl-btn" onclick="toggleMapType()" title="Satellite View"><i class="fas fa-satellite"></i></div>
@@ -1236,19 +1251,28 @@ tbody tr:last-child td { border-bottom: none; }
             </button>
           </div>
 
-          <!-- Maps Config -->
+          <!-- Map Info -->
           <div class="settings-section">
-            <h3><i class="fas fa-map" style="color:var(--green)"></i> Google Maps</h3>
-            <div class="form-group">
-              <label class="form-label">Google Maps API Key</label>
-              <input type="text" id="maps-key-input" class="form-input" placeholder="AIzaSy..."/>
-              <div style="font-size:12px;color:var(--text-muted);margin-top:6px">
-                Get a free API key from <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent-light)">Google Cloud Console</a>. Enable Maps JavaScript API.
+            <h3><i class="fas fa-map" style="color:var(--green)"></i> Map</h3>
+            <div class="setup-banner" style="border-color:var(--green);background:rgba(34,197,94,0.08)">
+              <i class="fas fa-circle-check" style="color:var(--green)"></i>
+              <div style="font-size:13px">
+                <strong>✅ OpenStreetMap — Bilkul FREE!</strong><br>
+                Koi API key nahi chahiye. Map automatically kaam karta hai.
               </div>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="saveMapsKey()">
-              <i class="fas fa-key"></i> Save & Load Map
-            </button>
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">Map Tile Style</div>
+                <div class="setting-desc">Map ka visual style change karo</div>
+              </div>
+              <select class="filter-select" id="map-tile-select" onchange="changeMapTile(this.value)" style="width:auto">
+                <option value="osm">Standard</option>
+                <option value="satellite">Satellite (ESRI)</option>
+                <option value="topo">Topographic</option>
+                <option value="dark">Dark Mode</option>
+              </select>
+            </div>
           </div>
 
           <!-- Location Settings -->
@@ -1403,14 +1427,16 @@ tbody tr:last-child td { border-bottom: none; }
 // Config.js pehle load hoti hai — values localStorage mein aa jaati hain
 const APP = {
   gasUrl:          localStorage.getItem('gasUrl')    || (typeof FT_CONFIG !== 'undefined' ? FT_CONFIG.GAS_URL    : ''),
-  mapsKey:         localStorage.getItem('mapsKey')   || (typeof FT_CONFIG !== 'undefined' ? FT_CONFIG.MAPS_API_KEY : ''),
   token:           localStorage.getItem('authToken') || '',
   user:            JSON.parse(localStorage.getItem('authUser') || 'null'),
   isDemoMode:      false,
   currentView:     'dashboard',
   mapInstance:     null,
+  leafletMap:      null,
+  dashMap:         null,
+  dashMarkers:     {},
   mapMarkers:      {},
-  mapType:         'roadmap',
+  mapType:         'osm',
   locationWatcher: null,
   locationInterval:null,
   demoMembers:     [],
@@ -1451,7 +1477,6 @@ window.addEventListener('load', () => {
 
   // Load saved inputs
   if (APP.gasUrl) document.getElementById('gas-url-input').value = APP.gasUrl;
-  if (APP.mapsKey) document.getElementById('maps-key-input').value = APP.mapsKey;
 
   // Splash → Auth
   setTimeout(() => {
@@ -1579,8 +1604,6 @@ function startApp() {
   // GAS URL field pre-fill
   const gasInput = document.getElementById('gas-url-input');
   if (gasInput && APP.gasUrl) gasInput.value = APP.gasUrl;
-  const mapsInput = document.getElementById('maps-key-input');
-  if (mapsInput && APP.mapsKey) mapsInput.value = APP.mapsKey;
 
   // Pre-fill profile
   document.getElementById('profile-name').value = APP.user.name || '';
@@ -1606,7 +1629,7 @@ function startApp() {
   }
 
   // Load maps if key exists
-  if (APP.mapsKey) loadGoogleMaps();
+  initLeafletMaps();
 
   // Set date filter default
   const today = new Date().toISOString().split('T')[0];
@@ -1833,7 +1856,7 @@ async function loadLocations() {
     `).join('');
 
     // Update map markers
-    if (APP.mapInstance) updateMapMarkers(locations);
+    updateLeafletMarkers(locations);
 
   } catch(e) {
     listEl.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error loading locations</h3></div>';
@@ -1857,9 +1880,8 @@ function selectMemberOnMap(userID, lat, lng, name) {
     </div>
   `;
 
-  if (APP.mapInstance) {
-    APP.mapInstance.setCenter({ lat: parseFloat(lat), lng: parseFloat(lng) });
-    APP.mapInstance.setZoom(16);
+  if (APP.leafletMap) {
+    APP.leafletMap.setView([parseFloat(lat), parseFloat(lng)], 16);
   }
 }
 
@@ -2346,98 +2368,146 @@ async function postLocation(pos, battery) {
 function locateMe() {
   if (!navigator.geolocation) return showToast('Geolocation not supported', 'error');
   navigator.geolocation.getCurrentPosition(pos => {
-    if (APP.mapInstance) {
-      APP.mapInstance.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-      APP.mapInstance.setZoom(17);
+    if (APP.leafletMap) {
+      APP.leafletMap.setView([pos.coords.latitude, pos.coords.longitude], 17);
     }
     showToast('Centered on your location', 'success');
   }, () => showToast('Could not get location', 'error'));
 }
 
 function toggleMapType() {
-  if (!APP.mapInstance) return;
-  APP.mapType = APP.mapType === 'roadmap' ? 'satellite' : 'roadmap';
-  APP.mapInstance.setMapTypeId(APP.mapType);
+  APP.mapType = APP.mapType === 'osm' ? 'satellite' : 'osm';
+  changeMapTile(APP.mapType);
 }
 
 function fitAllMarkers() {
-  if (!APP.mapInstance || !Object.keys(APP.mapMarkers).length) return;
-  const bounds = new google.maps.LatLngBounds();
-  Object.values(APP.mapMarkers).forEach(m => bounds.extend(m.getPosition()));
-  APP.mapInstance.fitBounds(bounds);
+  if (!APP.leafletMap || !Object.keys(APP.mapMarkers).length) return;
+  const group = L.featureGroup(Object.values(APP.mapMarkers));
+  APP.leafletMap.fitBounds(group.getBounds().pad(0.2));
 }
 
-function updateMapMarkers(locations) {
-  if (!APP.mapInstance) return;
+// ============================================================
+// LEAFLET MAP — FREE, No API Key needed (OpenStreetMap)
+// ============================================================
+
+const TILE_LAYERS = {
+  osm:       { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                attr: '© <a href="https://openstreetmap.org">OpenStreetMap</a>' },
+  satellite: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                attr: '© Esri' },
+  topo:      { url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                attr: '© OpenTopoMap' },
+  dark:      { url: 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+                attr: '© Stadia Maps' }
+};
+
+function initLeafletMaps() {
+  const cfg    = APP.config || {};
+  const defLat = cfg.HOME_LATITUDE  || 25.3960;
+  const defLng = cfg.HOME_LONGITUDE || 68.3578;
+
+  // ── Main tracking map ──────────────────────────────────────
+  const mapEl = document.getElementById('map');
+  if (mapEl && !APP.leafletMap) {
+    APP.leafletMap = L.map('map', { zoomControl: false, attributionControl: true })
+                      .setView([defLat, defLng], 13);
+    const tl = TILE_LAYERS.osm;
+    APP.currentTileLayer = L.tileLayer(tl.url, { attribution: tl.attr, maxZoom: 19 })
+                            .addTo(APP.leafletMap);
+    // Custom zoom control bottom-right
+    L.control.zoom({ position: 'bottomright' }).addTo(APP.leafletMap);
+    console.log('[Map] Leaflet tracking map ready');
+  }
+
+  // ── Dashboard mini-map ─────────────────────────────────────
+  const dashEl = document.getElementById('dash-map');
+  if (dashEl && !APP.dashMap) {
+    APP.dashMap = L.map('dash-map', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false })
+                   .setView([defLat, defLng], 12);
+    const tl2 = TILE_LAYERS.osm;
+    L.tileLayer(tl2.url, { attribution: tl2.attr, maxZoom: 18 }).addTo(APP.dashMap);
+  }
+}
+
+function changeMapTile(style) {
+  if (!APP.leafletMap || !APP.currentTileLayer) return;
+  APP.leafletMap.removeLayer(APP.currentTileLayer);
+  const tl = TILE_LAYERS[style] || TILE_LAYERS.osm;
+  APP.currentTileLayer = L.tileLayer(tl.url, { attribution: tl.attr, maxZoom: 19 })
+                          .addTo(APP.leafletMap);
+  showToast('Map style changed!', 'success');
+}
+
+function updateLeafletMarkers(locations) {
+  if (!APP.leafletMap) { initLeafletMaps(); return; }
+
   locations.forEach((loc, i) => {
-    const pos = { lat: parseFloat(loc.latitude), lng: parseFloat(loc.longitude) };
+    const lat = parseFloat(loc.latitude);
+    const lng = parseFloat(loc.longitude);
+    const color = MEMBER_COLORS[i % MEMBER_COLORS.length];
+    const initials = loc.name.charAt(0).toUpperCase();
+
+    // Custom pin icon
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:40px;height:40px;border-radius:50% 50% 50% 0;
+        transform:rotate(-45deg);
+        background:${color};
+        border:3px solid white;
+        box-shadow:0 3px 12px rgba(0,0,0,0.4);
+        display:flex;align-items:center;justify-content:center;">
+        <span style="transform:rotate(45deg);color:white;font-weight:700;font-size:15px;font-family:Inter,sans-serif">${initials}</span>
+      </div>
+      ${loc.isOnline ? '<div style="position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:#22c55e;border-radius:50%;border:2px solid white;box-shadow:0 0 6px #22c55e"></div>' : ''}`,
+      iconSize:   [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor:[0, -44]
+    });
+
+    const popup = `
+      <div style="font-family:Inter,sans-serif;min-width:180px;padding:4px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">${loc.name}</div>
+        <div style="font-size:12px;color:#666;line-height:1.8">
+          <div>🔋 Battery: <strong>${loc.battery}%</strong></div>
+          <div>💨 Speed: <strong>${parseFloat(loc.speed||0).toFixed(0)} km/h</strong></div>
+          <div>🎯 Accuracy: <strong>${loc.accuracy}m</strong></div>
+          <div>⏱ ${loc.isOnline ? '<span style="color:#22c55e">● Live</span>' : loc.minsAgo + ' min ago'}</div>
+        </div>
+        <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank"
+           style="display:inline-block;margin-top:8px;font-size:12px;color:#6366f1;text-decoration:none">
+          📍 Open in Google Maps →
+        </a>
+      </div>`;
+
     if (APP.mapMarkers[loc.userID]) {
-      APP.mapMarkers[loc.userID].setPosition(pos);
+      APP.mapMarkers[loc.userID].setLatLng([lat, lng])
+         .setIcon(icon).setPopupContent(popup);
     } else {
-      const marker = new google.maps.Marker({
-        position: pos, map: APP.mapInstance, title: loc.name,
-        label: { text: loc.name.charAt(0), color: 'white', fontWeight: 'bold' },
-        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 18,
-          fillColor: MEMBER_COLORS[i % MEMBER_COLORS.length], fillOpacity: 1,
-          strokeColor: 'white', strokeWeight: 2 }
-      });
-      const infoWindow = new google.maps.InfoWindow({
-        content: `<div style="font-family:Inter,sans-serif;padding:8px">
-          <strong>${loc.name}</strong><br>
-          🔋 ${loc.battery}% · ${loc.speed > 0 ? loc.speed + ' km/h' : 'Stationary'}<br>
-          <small style="color:#666">${new Date(loc.timestamp).toLocaleTimeString()}</small>
-        </div>`
-      });
-      marker.addListener('click', () => infoWindow.open(APP.mapInstance, marker));
+      const marker = L.marker([lat, lng], { icon })
+                      .addTo(APP.leafletMap)
+                      .bindPopup(popup, { maxWidth: 240 });
       APP.mapMarkers[loc.userID] = marker;
+    }
+
+    // Also add to dash map
+    if (APP.dashMap) {
+      if (APP.dashMarkers && APP.dashMarkers[loc.userID]) {
+        APP.dashMarkers[loc.userID].setLatLng([lat, lng]);
+      } else {
+        if (!APP.dashMarkers) APP.dashMarkers = {};
+        const smallIcon = L.divIcon({
+          className: '',
+          html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2px solid white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:white;box-shadow:0 2px 8px rgba(0,0,0,0.3)">${initials}</div>`,
+          iconSize:[28,28], iconAnchor:[14,14]
+        });
+        APP.dashMarkers[loc.userID] = L.marker([lat,lng],{icon:smallIcon})
+                                        .addTo(APP.dashMap)
+                                        .bindPopup(loc.name);
+      }
     }
   });
 }
-
-// ============================================================
-// GOOGLE MAPS
-// ============================================================
-function loadGoogleMaps() {
-  if (!APP.mapsKey || document.getElementById('gmaps-script')) return;
-  const script = document.createElement('script');
-  script.id = 'gmaps-script';
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${APP.mapsKey}&callback=initMap`;
-  script.async = true;
-  document.head.appendChild(script);
-}
-
-window.initMap = function() {
-  const center = { lat: 25.3960, lng: 68.3578 }; // Hyderabad default
-  const mapStyle = [
-    { elementType: 'geometry', stylers: [{ color: '#1a1a2e' }] },
-    { elementType: 'labels.text.fill', stylers: [{ color: '#8ec3b9' }] },
-    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
-    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] }
-  ];
-
-  const mapEl = document.getElementById('map');
-  mapEl.style.display = 'block';
-  mapEl.innerHTML = '';
-
-  APP.mapInstance = new google.maps.Map(mapEl, {
-    center, zoom: 13, disableDefaultUI: true,
-    styles: document.documentElement.getAttribute('data-theme') === 'dark' ? mapStyle : [],
-    gestureHandling: 'greedy'
-  });
-
-  // Also init dash map
-  const dashMapEl = document.getElementById('dash-map');
-  if (dashMapEl) {
-    dashMapEl.innerHTML = '';
-    new google.maps.Map(dashMapEl, {
-      center, zoom: 13, disableDefaultUI: true,
-      styles: document.documentElement.getAttribute('data-theme') === 'dark' ? mapStyle : []
-    });
-  }
-
-  showToast('Google Maps loaded!', 'success');
-  loadLocations();
-};
 
 // ============================================================
 // NOTIFICATIONS
@@ -2518,15 +2588,6 @@ function saveGasUrl() {
       else showToast('URL saved (verify manually)', 'warning');
     }).catch(() => showToast('Could not reach the URL. Check it and try again.', 'error'));
   });
-}
-
-function saveMapsKey() {
-  const key = document.getElementById('maps-key-input').value.trim();
-  if (!key) return showToast('Enter your Maps API key', 'warning');
-  APP.mapsKey = key;
-  localStorage.setItem('mapsKey', key);
-  loadGoogleMaps();
-  showToast('Maps key saved! Loading map...', 'success');
 }
 
 function toggleSetting(el, key) {
@@ -2655,5 +2716,7 @@ console.log(`
 ╚═══════════════════════════════════════╝
 `);
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 </body>
 </html>
