@@ -1651,14 +1651,27 @@ function setDashboardGreeting() {
 async function apiCall(params) {
   if (APP.isDemoMode) return demoApiCall(params);
   if (!APP.gasUrl) throw new Error('No GAS URL');
-  const url = APP.gasUrl + '?action=' + params.action;
-  const res = await fetch(APP.gasUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...params, token: APP.token })
+
+  // GAS ke saath GET + URL params sabse reliable hai (CORS issue nahi)
+  const allParams = { ...params, token: APP.token };
+  const qs = Object.entries(allParams)
+    .filter(([, v]) => v !== null && v !== undefined)
+    .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(
+      typeof v === 'object' ? JSON.stringify(v) : v
+    )).join('&');
+
+  const res = await fetch(APP.gasUrl + '?' + qs, {
+    method: 'GET',
+    redirect: 'follow'
   });
   if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch(e) {
+    console.error('GAS response parse error:', text.substring(0,200));
+    throw new Error('Invalid response from server');
+  }
 }
 
 // Demo API simulating backend

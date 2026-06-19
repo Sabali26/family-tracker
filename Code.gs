@@ -41,7 +41,7 @@ function initializeSheets() {
 }
 
 // ============================================================
-// CORS HANDLER
+// REQUEST HANDLER — GET + POST dono support
 // ============================================================
 function doGet(e) {
   return handleRequest(e);
@@ -57,13 +57,26 @@ function handleRequest(e) {
 
   try {
     let params = {};
-    if (e.postData && e.postData.contents) {
-      params = JSON.parse(e.postData.contents);
-    } else if (e.parameter) {
-      params = e.parameter;
+
+    // GET parameters (primary — CORS friendly)
+    if (e && e.parameter) {
+      params = Object.assign({}, e.parameter);
     }
 
-    const action = params.action || e.parameter.action;
+    // POST JSON body (fallback)
+    if (e && e.postData && e.postData.contents) {
+      try {
+        const postParams = JSON.parse(e.postData.contents);
+        params = Object.assign({}, postParams, params); // GET overrides POST
+      } catch(parseErr) {}
+    }
+
+    const action = params.action;
+    if (!action) {
+      return ContentService.createTextOutput(
+        JSON.stringify({ error: 'No action specified', received: JSON.stringify(params).substring(0,100) })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
     let result = {};
 
     switch (action) {
@@ -172,17 +185,36 @@ function loginUser(params) {
 
   let user = null;
   for (let i = 1; i < data.length; i++) {
-    if ((data[i][2] === identifier || data[i][3] === identifier) && data[i][4] === hash) {
-      if (data[i][6] !== 'active') return { error: 'Account is disabled' };
-      user = {
-        userID: data[i][0], name: data[i][1], mobile: data[i][2],
-        email: data[i][3], role: data[i][5], status: data[i][6], profilePic: data[i][8]
-      };
-      break;
+    const rowMobile = String(data[i][2]).trim();
+    const rowEmail  = String(data[i][3]).trim();
+    const rowHash   = String(data[i][4]).trim();
+    const rowStatus = String(data[i][6]).trim().toLowerCase();
+    const id = String(identifier).trim();
+
+    const identifierMatch = (rowMobile === id || rowEmail === id);
+    if (!identifierMatch) continue;
+
+    // Support both: hashed password AND plain text password (manually added users)
+    const passwordMatch = (rowHash === hash) || (rowHash === password);
+    if (!passwordMatch) {
+      return { error: 'Invalid credentials — wrong password' };
     }
+
+    if (rowStatus !== 'active') return { error: 'Account is disabled' };
+
+    // If plain text password found, auto-hash it for security
+    if (rowHash === password) {
+      sheet.getRange(i + 1, 5).setValue(hash);
+    }
+
+    user = {
+      userID: data[i][0], name: data[i][1], mobile: data[i][2],
+      email: data[i][3], role: data[i][5], status: data[i][6], profilePic: data[i][8]
+    };
+    break;
   }
 
-  if (!user) return { error: 'Invalid credentials' };
+  if (!user) return { error: 'Invalid credentials — user not found' };
 
   const token = generateToken();
   const sessionSheet = ss.getSheetByName(SHEETS.SESSIONS);
