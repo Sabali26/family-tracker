@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Family Tracker Pro</title>
+<script>
+  // GitHub Pages 404 → redirect to index
+  const path = window.location.pathname;
+  const repo = path.split('/')[1]; // repo name
+  sessionStorage.setItem('redirect', path);
+  window.location.replace('/' + repo + '/');
+</script>
+</head>
+<body style="background:#080c14;color:#f1f5f9;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+  <div style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">📍</div>
+    <div style="font-size:18px;font-weight:600">Redirecting...</div>
+  </div>
+</body>
+</html>

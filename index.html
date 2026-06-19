@@ -9,13 +9,13 @@
 <meta name="apple-mobile-web-app-title" content="Family Tracker"/>
 <meta name="description" content="Secure real-time family location tracking"/>
 <title>Family Tracker Pro</title>
-<link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="apple-touch-icon" href="./icons/icon-192.png"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="config.js"></script>
+<script src="./config.js"></script>
 <style>
 :root {
   --bg: #080c14;
@@ -112,7 +112,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font2);background:var(--
 .ib-close{background:rgba(255,255,255,.2);color:#fff;border:none;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 
 /* ── MAIN APP ── */
-#app{display:none;flex-direction:column;height:100%}
+#app{display:none;flex-direction:column;height:100%;overflow:hidden}
 #app.on{display:flex}
 
 /* ── TOPBAR ── */
@@ -132,10 +132,10 @@ html,body{height:100%;overflow:hidden;font-family:var(--font2);background:var(--
 .uc-role{font-size:10px;color:var(--t3);margin-top:1px}
 
 /* ── LAYOUT ── */
-.layout{flex:1;display:flex;overflow:hidden;position:relative}
+.layout{flex:1;display:flex;overflow:hidden;position:relative;min-height:0}
 
 /* ── SIDEBAR ── */
-.sidebar{width:var(--side);flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:12px 10px;transition:transform var(--tr)}
+.sidebar{width:var(--side);flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:12px 10px;transition:transform var(--tr);min-height:0}
 @media(max-width:768px){
   .sidebar{position:fixed;left:0;top:var(--nav);bottom:0;z-index:90;transform:translateX(-100%)}
   .sidebar.open{transform:translateX(0);box-shadow:8px 0 40px rgba(0,0,0,.5)}
@@ -153,12 +153,12 @@ html,body{height:100%;overflow:hidden;font-family:var(--font2);background:var(--
 .sb-bottom{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
 
 /* ── MAIN VIEW ── */
-.main{flex:1;overflow-y:auto;padding:22px;scroll-behavior:smooth}
+.main{flex:1;overflow-y:auto;padding:22px;scroll-behavior:smooth;min-height:0;min-width:0}
 @media(max-width:768px){.main{padding:14px;padding-bottom:calc(var(--bot)+14px)}}
 
 /* ── VIEWS ── */
 .view{display:none;animation:fadeIn .2s ease}
-.view.on{display:block}
+.view.on{display:block;min-height:0}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── PAGE HEADER ── */
@@ -173,7 +173,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font2);background:var(--
 .card-title i{color:var(--accent2)}
 
 /* ── STAT CARDS ── */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;align-items:start}
 .sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;transition:var(--tr)}
 .sc:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
@@ -192,9 +192,9 @@ html,body{height:100%;overflow:hidden;font-family:var(--font2);background:var(--
 .sc-lbl{font-size:12px;color:var(--t2);margin-top:3px}
 
 /* ── TRACKING LAYOUT ── */
-.track-wrap{display:grid;grid-template-columns:290px 1fr;gap:16px;height:calc(100vh - 130px)}
+.track-wrap{display:grid;grid-template-columns:290px 1fr;gap:16px;height:calc(100vh - var(--nav) - 100px);min-height:0}
 @media(max-width:900px){.track-wrap{grid-template-columns:1fr;height:auto}}
-.ml-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.ml-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;min-height:0}
 .ml-head{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:7px;flex-shrink:0}
 .ml-head i{color:var(--accent2)}
 .ml-body{flex:1;overflow-y:auto;padding:8px}
@@ -212,8 +212,8 @@ html,body{height:100%;overflow:hidden;font-family:var(--font2);background:var(--
 .speed-badge{font-size:10px;color:var(--t3);margin-top:2px}
 
 /* ── MAP ── */
-.map-box{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);position:relative;flex:1}
-.map-box #map{width:100%;height:100%}
+.map-box{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);position:relative;flex:1;min-height:0}
+.map-box #map{width:100%;height:100%;min-height:350px}
 .map-ctrl{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:7px;z-index:500}
 .mc-btn{width:38px;height:38px;border-radius:9px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t1);font-size:15px;box-shadow:var(--shadow);transition:var(--tr)}
 .mc-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -547,9 +547,9 @@ tbody tr:last-child td{border:none}
             <div class="ml-head"><i class="fas fa-satellite-dish"></i> Active Trackers <span id="tracker-count" style="margin-left:auto;font-size:11px;color:var(--t3)"></span></div>
             <div class="ml-body" id="ml-body"><div class="spin"></div></div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="map-box" style="height:calc(100vh - 250px);min-height:380px">
-              <div id="map" style="width:100%;height:100%"></div>
+          <div style="display:flex;flex-direction:column;gap:12px;min-height:0;overflow:hidden">
+            <div class="map-box" style="min-height:380px;flex:1">
+              <div id="map" style="width:100%;height:100%;min-height:380px"></div>
               <div class="map-ctrl">
                 <div class="mc-btn" onclick="locateMe()" title="My Location"><i class="fas fa-crosshairs"></i></div>
                 <div class="mc-btn" onclick="fitAll()" title="Fit All"><i class="fas fa-expand"></i></div>
@@ -772,7 +772,7 @@ const TILES = {
 // INIT
 // ═══════════════════════════════════════════════
 window.addEventListener('load', () => {
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
   // Theme
   const th = localStorage.getItem('ft-theme') || 'dark';
@@ -963,7 +963,9 @@ function nav(view) {
   if (window.innerWidth<=768) { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-ov').classList.remove('on'); }
   switch(view) {
     case 'dashboard':   loadDash(); break;
-    case 'tracking':    loadLocs(); initMap(); break;
+    case 'tracking':
+      setTimeout(()=>{ initMap(); },50);
+      break;
     case 'members':     loadMembers(); break;
     case 'history':     loadHist(); loadMemDrop('h-mem'); break;
     case 'geofencing':  loadGeo(); break;
@@ -1033,7 +1035,10 @@ async function loadDash() {
 // LEAFLET MAPS
 // ═══════════════════════════════════════════════
 function initMap() {
-  if (APP.leafMap) { setTimeout(()=>APP.leafMap.invalidateSize(),200); return; }
+  if (APP.leafMap) {
+    setTimeout(()=>{ APP.leafMap.invalidateSize(true); },250);
+    return;
+  }
   const el=document.getElementById('map');
   if (!el) return;
   const lat = CFG.HOME_LATITUDE||25.3960, lng = CFG.HOME_LONGITUDE||68.3578;
@@ -1042,7 +1047,8 @@ function initMap() {
   APP.currentTile = L.tileLayer(t.url,{attribution:t.attr,maxZoom:19}).addTo(APP.leafMap);
   L.control.zoom({position:'bottomright'}).addTo(APP.leafMap);
   document.getElementById('mt-text').textContent='Map loaded — loading members...';
-  loadLocs();
+  // Let DOM settle then fix size
+  requestAnimationFrame(()=>{ setTimeout(()=>{ APP.leafMap.invalidateSize(true); loadLocs(); },300); });
 }
 
 function initDashMap() {
@@ -1550,11 +1556,13 @@ async function loadNotifs(){
 // ═══════════════════════════════════════════════
 // REFRESH
 // ═══════════════════════════════════════════════
-async function refreshAll(){await Promise.all([loadDash(),loadNotifs()]).catch(()={});}
+async function refreshAll(){await Promise.all([loadDash(),loadNotifs()]).catch(e=>console.log('Refresh error:',e));}
 async function refreshLive(){
-  if(document.getElementById('v-tracking').classList.contains('on')) loadLocs();
-  if(document.getElementById('v-dashboard').classList.contains('on')) loadDash();
-  loadNotifs();
+  try {
+    if(document.getElementById('v-tracking')?.classList.contains('on')) loadLocs();
+    if(document.getElementById('v-dashboard')?.classList.contains('on')) loadDash();
+    loadNotifs();
+  } catch(e) { console.log('Refresh error:', e); }
 }
 
 // ═══════════════════════════════════════════════
