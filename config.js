@@ -11,7 +11,7 @@ const FT_CONFIG = {
   // Deploy karne ke baad milti hai yeh URL
   // Format: https://script.google.com/macros/s/XXXXX/exec
   // ─────────────────────────────────────────────
-  GAS_URL: "https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec",
+  GAS_URL: "https://script.google.com/macros/s/AKfycbwiJlArKVkjW_7LlEgcDOeY4VUok3LszEpzUB-8yMQEi5eDCdnXP_GpE8fDdF_zg5dhHQ/exec",
 
   // ─────────────────────────────────────────────
   // 🗺️ MAP STYLE — Default tile layer
