@@ -5,28 +5,39 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Family Tracker Pro</title>
 <script>
-  // GitHub Pages SPA fix
-  // Works for ANY repo name automatically
-  var l = window.location;
-  var base = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '');
-  var pathParts = l.pathname.split('/').filter(Boolean);
+(function() {
+  // Detect GitHub Pages base path
+  var hostname = window.location.hostname;
+  var pathname = window.location.pathname;
+  var segments = pathname.split('/').filter(Boolean);
+  var target;
   
-  // GitHub Pages: first segment is repo name
-  // e.g. /family-tracker/something → go to /family-tracker/
-  var repoRoot = pathParts.length > 0 ? base + '/' + pathParts[0] + '/' : base + '/';
-  
-  // Custom domain or root deployment
-  if (l.hostname !== 'github.io' && !l.hostname.endsWith('.github.io')) {
-    repoRoot = base + '/';
+  if (hostname.endsWith('.github.io') && segments.length > 0) {
+    // GitHub Pages with repo subfolder
+    // e.g. sabali26.github.io/family-tracker/anything → go to /family-tracker/
+    target = '/' + segments[0] + '/';
+  } else {
+    // Custom domain or root
+    target = '/';
   }
   
-  sessionStorage.setItem('ft_redirect', l.href);
-  window.location.replace(repoRoot);
+  // Store where they were trying to go
+  sessionStorage.setItem('ft_404_from', pathname);
+  
+  // Redirect to app root
+  window.location.replace(target);
+})();
 </script>
 </head>
-<body style="background:#080c14;color:#f1f5f9;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px">
+<body style="background:#080c14;color:#f1f5f9;font-family:Inter,sans-serif;
+             display:flex;align-items:center;justify-content:center;
+             height:100vh;margin:0;flex-direction:column;gap:14px">
   <div style="font-size:56px">📍</div>
   <div style="font-size:18px;font-weight:600">Family Tracker Pro</div>
-  <div style="font-size:13px;color:#475569">Loading...</div>
+  <div style="font-size:13px;color:#475569;margin-top:4px">Redirecting...</div>
+  <div style="width:160px;height:3px;background:#1a2035;border-radius:99px;overflow:hidden;margin-top:8px">
+    <div style="height:100%;background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:99px;animation:load 1.5s ease forwards"></div>
+  </div>
+  <style>@keyframes load{from{width:0}to{width:100%}}</style>
 </body>
 </html>

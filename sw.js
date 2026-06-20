@@ -1,63 +1,91 @@
-// Family Tracker Pro — Service Worker
-// Relative paths — works on ANY GitHub Pages URL
-const CACHE = 'ft-v4';
+// Family Tracker Pro — Service Worker v6
+// Works with ANY GitHub Pages URL automatically
+
+// Detect our scope dynamically
+const BASE = self.registration.scope; // e.g. https://sabali26.github.io/family-tracker/
+const CACHE = 'ft-v6';
 
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './config.js',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  BASE,
+  BASE + 'index.html',
+  BASE + 'manifest.json',
+  BASE + 'config.js',
+  BASE + 'icons/icon-192.png',
+  BASE + 'icons/icon-512.png',
+  BASE + '404.html'
 ];
 
 self.addEventListener('install', e => {
+  console.log('[SW] Installing, scope:', BASE);
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(err => console.log('Cache warn:', err))
+    caches.open(CACHE)
+      .then(c => c.addAll(ASSETS))
+      .catch(err => console.log('[SW] Cache warn (non-fatal):', err))
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
+  console.log('[SW] Activated');
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE).map(k => {
+        console.log('[SW] Deleting old cache:', k);
+        return caches.delete(k);
+      }))
     )
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
+  const url = e.request.url;
 
-  // Never cache GAS calls or tile servers
-  if (url.hostname.includes('script.google.com') ||
-      url.hostname.includes('tile.openstreetmap.org') ||
-      url.hostname.includes('arcgisonline.com') ||
-      url.hostname.includes('stadiamaps.com') ||
-      url.hostname.includes('opentopomap.org')) {
-    return e.respondWith(fetch(e.request).catch(() =>
-      new Response('{"error":"offline"}', { headers: { 'Content-Type': 'application/json' } })
-    ));
+  // Never intercept external APIs
+  if (url.includes('script.google.com') ||
+      url.includes('tile.openstreetmap.org') ||
+      url.includes('arcgisonline.com') ||
+      url.includes('stadiamaps.com') ||
+      url.includes('opentopomap.org') ||
+      url.includes('unpkg.com') ||
+      url.includes('googleapis.com') ||
+      url.includes('cdnjs.cloudflare.com')) {
+    return; // let browser handle
   }
 
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
-        if (res.ok && e.request.method === 'GET') {
-          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        // Cache successful GET responses
+        if (res && res.ok && e.request.method === 'GET') {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      }).catch(() => caches.match('./index.html'));
+      }).catch(() => {
+        // Offline fallback → serve index.html
+        return caches.match(BASE + 'index.html');
+      });
     })
   );
 });
 
+// Push notifications
 self.addEventListener('push', e => {
-  const d = e.data ? e.data.json() : { title: 'Family Tracker', body: 'New update' };
-  e.waitUntil(self.registration.showNotification(d.title || 'Family Tracker Pro', {
-    body: d.body, icon: './icons/icon-192.png',
-    badge: './icons/badge-72.png', vibrate: [200, 100, 200]
-  }));
+  const d = e.data ? e.data.json() : {};
+  e.waitUntil(
+    self.registration.showNotification(d.title || 'Family Tracker Pro', {
+      body:    d.body || 'New update',
+      icon:    BASE + 'icons/icon-192.png',
+      badge:   BASE + 'icons/badge-72.png',
+      vibrate: [200, 100, 200],
+      tag:     'ft-notif'
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow(BASE));
 });

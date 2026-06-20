@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<base href="./"/>
 <meta name="theme-color" content="#6366f1"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -772,7 +773,13 @@ const TILES = {
 // INIT
 // ═══════════════════════════════════════════════
 window.addEventListener('load', () => {
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  if ('serviceWorker' in navigator) {
+    // Get base path dynamically for any GitHub Pages repo
+    const swPath = window.location.pathname.replace(/\/[^\/]*$/, '/') + 'sw.js';
+    navigator.serviceWorker.register(swPath, { scope: window.location.pathname.replace(/\/[^\/]*$/, '/') })
+      .then(r => console.log('[SW] Registered:', r.scope))
+      .catch(e => console.log('[SW] Failed:', e));
+  }
   // Handle GitHub Pages 404 redirect
   const redir = sessionStorage.getItem('ft_redirect');
   if (redir) { sessionStorage.removeItem('ft_redirect'); }
