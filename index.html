@@ -595,8 +595,8 @@ tbody tr:last-child td{border:none}
         </div>
         <div class="card">
           <div class="tbl-wrap">
-            <table><thead><tr><th>Member</th><th>Latitude</th><th>Longitude</th><th>Speed</th><th>Time</th><th>Date</th></tr></thead>
-            <tbody id="h-tbody"><tr><td colspan="6"><div class="spin"></div></td></tr></tbody></table>
+            <table><thead><tr><th>Member</th><th>Latitude</th><th>Longitude</th><th>Speed</th><th>Accuracy</th><th>Battery</th><th>Time</th><th>Date</th></tr></thead>
+            <tbody id="h-tbody"><tr><td colspan="8"><div class="spin"></div></td></tr></tbody></table>
           </div>
         </div>
       </div>
@@ -773,6 +773,9 @@ const TILES = {
 // ═══════════════════════════════════════════════
 window.addEventListener('load', () => {
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  // Handle GitHub Pages 404 redirect
+  const redir = sessionStorage.getItem('ft_redirect');
+  if (redir) { sessionStorage.removeItem('ft_redirect'); }
 
   // Theme
   const th = localStorage.getItem('ft-theme') || 'dark';
@@ -1111,14 +1114,20 @@ async function loadLocs() {
         </div>
         <div class="ml-right">
           <div class="bat-wrap"><i class="fas fa-battery-${batIcon(l.battery)}" style="color:${batColor(l.battery)}"></i>${l.battery}%</div>
-          <div class="speed-badge">${l.speed>0?parseFloat(l.speed).toFixed(0)+' km/h':'Still'}</div>
+          <div class="speed-badge">${l.speed>0?'🚗 '+parseFloat(l.speed).toFixed(0)+' km/h':'⬤ Still'}</div>
         </div>
       </div>`).join('');
 
     updateMapMarkers(locs);
-    const names=locs.filter(l=>l.isOnline).map(l=>l.name).join(', ');
-    document.getElementById('mt-text').textContent=online>0?`Live: ${names}`:'No members online';
-    document.getElementById('mt-count').textContent=`${locs.length} total`;
+    const movingMembers = locs.filter(l=>l.isOnline && parseFloat(l.speed)>2);
+    const onlineNames   = locs.filter(l=>l.isOnline).map(l=>l.name).join(', ');
+    let tickerText = online > 0 ? `Live: ${onlineNames}` : 'No members online';
+    if (movingMembers.length > 0) {
+      const moveStr = movingMembers.map(l=>`${l.name.split(' ')[0]} ${parseFloat(l.speed).toFixed(0)}km/h`).join(' · ');
+      tickerText = `🚗 Moving: ${moveStr}`;
+    }
+    document.getElementById('mt-text').textContent = tickerText;
+    document.getElementById('mt-count').textContent = `${online}/${locs.length} online`;
   } catch(e) {
     document.getElementById('ml-body').innerHTML='<div class="empty"><i class="fas fa-exclamation-triangle"></i><h3>Load failed</h3></div>';
   }
@@ -1158,11 +1167,11 @@ function updateMapMarkers(locs) {
           </div>
           <div style="background:rgba(99,102,241,.08);border-radius:8px;padding:8px">
             <div style="color:#94a3b8;font-size:10px;margin-bottom:2px">💨 SPEED</div>
-            <div style="font-weight:700;font-size:15px">${spd.toFixed(0)} km/h</div>
+            <div style="font-weight:700;font-size:15px;color:${spd>5?'#f97316':'#f1f5f9'}">${spd>0?spd.toFixed(0)+' km/h':'Parked'}</div>
           </div>
           <div style="background:rgba(99,102,241,.08);border-radius:8px;padding:8px">
             <div style="color:#94a3b8;font-size:10px;margin-bottom:2px">🎯 ACCURACY</div>
-            <div style="font-weight:700;font-size:15px">±${l.accuracy||'?'}m</div>
+            <div style="font-weight:700;font-size:15px;color:${l.accuracy<20?'#22c55e':l.accuracy<50?'#eab308':'#ef4444'}">${l.accuracy?'±'+l.accuracy+'m':'—'}</div>
           </div>
           <div style="background:rgba(99,102,241,.08);border-radius:8px;padding:8px">
             <div style="color:#94a3b8;font-size:10px;margin-bottom:2px">⏱ LAST SEEN</div>
@@ -1203,13 +1212,37 @@ function selectMember(uid, lat, lng, name, bat, spd, acc, ts) {
   // Detail panel
   document.getElementById('mdet').style.display='block';
   document.getElementById('mdet-name').textContent=name;
+  const isMoving = parseFloat(spd) > 1;
+  const accNum = parseFloat(acc);
   document.getElementById('mdet-grid').innerHTML=`
-    <div class="mdet-item"><div class="mdet-label">🔋 Battery</div><div class="mdet-val" style="color:${batColor(bat)}">${bat}%</div></div>
-    <div class="mdet-item"><div class="mdet-label">💨 Speed</div><div class="mdet-val">${parseFloat(spd).toFixed(0)} km/h</div></div>
-    <div class="mdet-item"><div class="mdet-label">🎯 Accuracy</div><div class="mdet-val">±${acc}m</div></div>
-    <div class="mdet-item"><div class="mdet-label">⏱ Updated</div><div class="mdet-val" style="font-size:13px">${new Date(ts).toLocaleTimeString()}</div></div>
-    <div class="mdet-item"><div class="mdet-label">📍 Latitude</div><div class="mdet-val" style="font-size:12px">${parseFloat(lat).toFixed(6)}</div></div>
-    <div class="mdet-item"><div class="mdet-label">📍 Longitude</div><div class="mdet-val" style="font-size:12px">${parseFloat(lng).toFixed(6)}</div></div>`;
+    <div class="mdet-item">
+      <div class="mdet-label">🔋 Battery</div>
+      <div class="mdet-val" style="color:${batColor(bat)}">${bat}%
+        <div style="height:4px;background:var(--bg2);border-radius:2px;margin-top:5px"><div style="height:100%;width:${bat}%;background:${batColor(bat)};border-radius:2px;transition:width .5s"></div></div>
+      </div>
+    </div>
+    <div class="mdet-item">
+      <div class="mdet-label">💨 Speed</div>
+      <div class="mdet-val" style="color:${isMoving?'#f97316':'#94a3b8'}">${isMoving?parseFloat(spd).toFixed(1)+' km/h':'Parked'}</div>
+    </div>
+    <div class="mdet-item">
+      <div class="mdet-label">🎯 Accuracy</div>
+      <div class="mdet-val" style="color:${accNum<20?'#22c55e':accNum<50?'#eab308':'#ef4444'}">±${acc}m
+        <div style="font-size:10px;color:var(--t3);font-weight:400">${accNum<20?'Excellent':accNum<50?'Good':'Low'}</div>
+      </div>
+    </div>
+    <div class="mdet-item">
+      <div class="mdet-label">⏱ Last Update</div>
+      <div class="mdet-val" style="font-size:13px">${new Date(ts).toLocaleTimeString()}</div>
+    </div>
+    <div class="mdet-item">
+      <div class="mdet-label">📍 Latitude</div>
+      <div class="mdet-val" style="font-size:12px;font-family:monospace">${parseFloat(lat).toFixed(6)}</div>
+    </div>
+    <div class="mdet-item">
+      <div class="mdet-label">📍 Longitude</div>
+      <div class="mdet-val" style="font-size:12px;font-family:monospace">${parseFloat(lng).toFixed(6)}</div>
+    </div>`;
   document.getElementById('mdet-gmaps').href=`https://www.google.com/maps?q=${lat},${lng}`;
   document.getElementById('mdet-waze').href=`https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
 }
@@ -1246,26 +1279,148 @@ document.head.appendChild(style);
 // ═══════════════════════════════════════════════
 // LOCATION TRACKING
 // ═══════════════════════════════════════════════
+// ── Location state cache ─────────────────────────────────────
+const LOC_CACHE = {
+  lat: null, lng: null, acc: null,
+  speed: null,   // always keep last known speed
+  battery: 100,
+  lastSent: 0
+};
+
 function startTracking() {
-  if(!navigator.geolocation||!APP.settings.share) return;
-  const send=()=>{
-    navigator.geolocation.getCurrentPosition(pos=>{
-      const batPromise = navigator.getBattery ? navigator.getBattery().then(b=>Math.round(b.level*100)) : Promise.resolve(100);
-      batPromise.then(bat=>{
-        api({action:'updateLocation',userID:APP.user.userID,
-          latitude:pos.coords.latitude,longitude:pos.coords.longitude,
-          accuracy:Math.round(pos.coords.accuracy)||0,
-          speed:pos.coords.speed?parseFloat(pos.coords.speed*3.6).toFixed(1):0,
-          battery:bat}).catch(()=>{});
+  if (!navigator.geolocation || !APP.settings.share) return;
+
+  // Battery — one time, cached
+  if (navigator.getBattery) {
+    navigator.getBattery().then(b => {
+      LOC_CACHE.battery = Math.round(b.level * 100);
+      b.addEventListener('levelchange', () => {
+        LOC_CACHE.battery = Math.round(b.level * 100);
       });
-    },()=>{},{enableHighAccuracy:APP.settings.highAcc!==false,timeout:10000});
+    });
+  }
+
+  const interval = (APP.settings.interval || 30) * 1000;
+
+  // watchPosition gives CONTINUOUS GPS stream — never interrupts
+  // speed comes directly from device GPS chip (most accurate)
+  APP.lWatch = navigator.geolocation.watchPosition(
+    pos => {
+      const coords = pos.coords;
+      LOC_CACHE.lat = coords.latitude;
+      LOC_CACHE.lng = coords.longitude;
+      LOC_CACHE.acc = Math.round(coords.accuracy) || 0;
+
+      // Speed: GPS speed in m/s → convert to km/h
+      // Only update if GPS actually gives speed (>= 0)
+      // Keep last known speed if null (phone stopped reporting briefly)
+      if (coords.speed !== null && coords.speed >= 0) {
+        LOC_CACHE.speed = parseFloat((coords.speed * 3.6).toFixed(1));
+      }
+      // If coords.speed is null, LOC_CACHE.speed keeps previous value ✅
+
+      // Send to server at configured interval (not every GPS update)
+      const now = Date.now();
+      if (now - LOC_CACHE.lastSent >= interval) {
+        sendLocation();
+        LOC_CACHE.lastSent = now;
+      }
+    },
+    err => {
+      console.log('GPS watch error:', err.code, err.message);
+      // On error, retry with getCurrentPosition as fallback
+      if (err.code !== 1) { // 1 = permission denied, don't retry
+        setTimeout(() => restartTracking(), 5000);
+      }
+    },
+    {
+      enableHighAccuracy: APP.settings.highAcc !== false,
+      timeout: 30000,       // longer timeout for mobile
+      maximumAge: 2000      // accept 2s old position (smoother)
+    }
+  );
+
+  // Also send immediately on start
+  sendLocation();
+
+  // Periodic send as backup (ensures interval even if watch stalls)
+  APP.lInterval = setInterval(sendLocation, interval);
+}
+
+function sendLocation() {
+  if (!LOC_CACHE.lat || !APP.token) return;
+  api({
+    action: 'updateLocation',
+    userID: APP.user.userID,
+    latitude:  LOC_CACHE.lat,
+    longitude: LOC_CACHE.lng,
+    accuracy:  LOC_CACHE.acc  || 0,
+    speed:     LOC_CACHE.speed !== null ? LOC_CACHE.speed : 0,
+    battery:   LOC_CACHE.battery
+  }).catch(() => {});
+  // Auto-save to history every send
+  autoSaveHistory();
+}
+
+// Auto History Save — stores every location update locally
+// and syncs to GAS periodically
+const HIST_BUFFER = [];
+let histSyncTimer = null;
+
+function autoSaveHistory() {
+  if (!LOC_CACHE.lat) return;
+  const entry = {
+    lat: LOC_CACHE.lat, lng: LOC_CACHE.lng,
+    speed: LOC_CACHE.speed || 0,
+    accuracy: LOC_CACHE.acc || 0,
+    battery: LOC_CACHE.battery,
+    ts: new Date().toISOString(),
+    date: new Date().toISOString().split('T')[0]
   };
-  send();
-  APP.lInterval=setInterval(send,(APP.settings.interval||30)*1000);
+  HIST_BUFFER.push(entry);
+
+  // Save locally too (survives refresh)
+  try {
+    const saved = JSON.parse(localStorage.getItem('ft_hist_buf') || '[]');
+    saved.push(entry);
+    // Keep only last 200 locally
+    if (saved.length > 200) saved.splice(0, saved.length - 200);
+    localStorage.setItem('ft_hist_buf', JSON.stringify(saved));
+  } catch(e) {}
+
+  // Sync buffer to GAS every 5 entries or 3 minutes
+  clearTimeout(histSyncTimer);
+  if (HIST_BUFFER.length >= 5) {
+    flushHistoryBuffer();
+  } else {
+    histSyncTimer = setTimeout(flushHistoryBuffer, 3 * 60 * 1000);
+  }
+}
+
+async function flushHistoryBuffer() {
+  if (!HIST_BUFFER.length || !APP.token) return;
+  const batch = HIST_BUFFER.splice(0, HIST_BUFFER.length);
+  try {
+    // Send each as individual history record
+    for (const e of batch) {
+      await api({
+        action: 'saveHistory',
+        userID: APP.user.userID,
+        latitude: e.lat, longitude: e.lng,
+        speed: e.speed, accuracy: e.accuracy,
+        battery: e.battery, timestamp: e.ts, date: e.date
+      }).catch(() => HIST_BUFFER.unshift(e)); // re-queue on fail
+    }
+    localStorage.removeItem('ft_hist_buf');
+  } catch(e) {
+    HIST_BUFFER.unshift(...batch); // re-queue all on fail
+  }
 }
 
 function restartTracking() {
   clearInterval(APP.lInterval);
+  if (APP.lWatch) navigator.geolocation.clearWatch(APP.lWatch);
+  APP.lWatch = null;
   startTracking();
 }
 
@@ -1344,13 +1499,20 @@ async function loadHist(){
     const [hr,mr]=await Promise.all([api({action:'getHistory',userID:uid,date:dt}),api({action:'getMembers'})]);
     const hist=hr.history||[], mmap=(mr.members||[]).reduce((a,m)=>{a[m.userID]=m.name;return a;},{});
     if(!hist.length){document.getElementById('h-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:28px">No records found</td></tr>';return;}
-    document.getElementById('h-tbody').innerHTML=hist.map(h=>`<tr>
-      <td><strong>${mmap[h.userID]||h.userID}</strong></td>
-      <td style="font-family:monospace;font-size:12px">${parseFloat(h.latitude).toFixed(6)}</td>
-      <td style="font-family:monospace;font-size:12px">${parseFloat(h.longitude).toFixed(6)}</td>
-      <td>${parseFloat(h.speed||0).toFixed(1)} km/h</td>
-      <td style="color:var(--t2)">${new Date(h.timestamp).toLocaleTimeString()}</td>
-      <td style="color:var(--t2)">${h.date}</td></tr>`).join('');
+    document.getElementById('h-tbody').innerHTML=hist.map(h=>{
+      const spd=parseFloat(h.speed||0);
+      const acc=parseFloat(h.accuracy||0);
+      const bat=parseFloat(h.battery||0);
+      return`<tr>
+        <td><strong>${mmap[h.userID]||h.userID}</strong></td>
+        <td style="font-family:monospace;font-size:12px">${parseFloat(h.latitude).toFixed(6)}</td>
+        <td style="font-family:monospace;font-size:12px">${parseFloat(h.longitude).toFixed(6)}</td>
+        <td><span style="color:${spd>5?'var(--orange)':'var(--t2)'};font-weight:${spd>5?'600':'400'}">${spd>0?spd.toFixed(1)+' km/h':'Parked'}</span></td>
+        <td><span style="color:${acc<20?'var(--green)':acc<50?'var(--yellow)':'var(--red)'};font-size:12px">${acc?'±'+acc+'m':'—'}</span></td>
+        <td><span style="color:${batColor(bat)};font-size:12px">${bat?bat+'%':'—'}</span></td>
+        <td style="color:var(--t2);font-size:12px">${new Date(h.timestamp).toLocaleTimeString()}</td>
+        <td style="color:var(--t3);font-size:12px">${h.date}</td></tr>`;
+    }).join('');
   }catch(e){document.getElementById('h-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--red)">Load failed</td></tr>';}
 }
 

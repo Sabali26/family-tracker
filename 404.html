@@ -5,17 +5,28 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Family Tracker Pro</title>
 <script>
-  // GitHub Pages 404 → redirect to index
-  const path = window.location.pathname;
-  const repo = path.split('/')[1]; // repo name
-  sessionStorage.setItem('redirect', path);
-  window.location.replace('/' + repo + '/');
+  // GitHub Pages SPA fix
+  // Works for ANY repo name automatically
+  var l = window.location;
+  var base = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '');
+  var pathParts = l.pathname.split('/').filter(Boolean);
+  
+  // GitHub Pages: first segment is repo name
+  // e.g. /family-tracker/something → go to /family-tracker/
+  var repoRoot = pathParts.length > 0 ? base + '/' + pathParts[0] + '/' : base + '/';
+  
+  // Custom domain or root deployment
+  if (l.hostname !== 'github.io' && !l.hostname.endsWith('.github.io')) {
+    repoRoot = base + '/';
+  }
+  
+  sessionStorage.setItem('ft_redirect', l.href);
+  window.location.replace(repoRoot);
 </script>
 </head>
-<body style="background:#080c14;color:#f1f5f9;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
-  <div style="text-align:center">
-    <div style="font-size:48px;margin-bottom:16px">📍</div>
-    <div style="font-size:18px;font-weight:600">Redirecting...</div>
-  </div>
+<body style="background:#080c14;color:#f1f5f9;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px">
+  <div style="font-size:56px">📍</div>
+  <div style="font-size:18px;font-weight:600">Family Tracker Pro</div>
+  <div style="font-size:13px;color:#475569">Loading...</div>
 </body>
 </html>

@@ -94,6 +94,7 @@ function handleRequest(e) {
       case 'sendSOS': result = sendSOS(params); break;
       case 'getSOSAlerts': result = getSOSAlerts(params); break;
       case 'resolveSOSAlert': result = resolveSOSAlert(params); break;
+      case 'saveHistory': result = saveHistoryRecord(params); break;
       case 'addMember': result = addMember(params); break;
       case 'deleteMember': result = deleteMember(params); break;
       case 'updateProfile': result = updateProfile(params); break;
@@ -295,33 +296,75 @@ function updateProfile(params) {
 // LOCATION FUNCTIONS
 // ============================================================
 function updateLocation(params) {
-  const { token, userID, latitude, longitude, accuracy, speed, battery } = params;
+  const { userID, latitude, longitude, accuracy, speed, battery } = params;
   const sheet = ss.getSheetByName(SHEETS.LIVE_LOCATION);
   const data = sheet.getDataRange().getValues();
   const now = new Date().toISOString();
 
-  // Update existing or add new
+  const newSpeed = parseFloat(speed) || 0;
+  const newBat   = parseFloat(battery) || 100;
+  const newAcc   = parseFloat(accuracy) || 0;
+
+  // Update existing row
   for (let i = 1; i < data.length; i++) {
-    if (data[i][1] === userID) {
-      sheet.getRange(i+1, 3, 1, 7).setValues([[latitude, longitude, accuracy || 0, speed || 0, battery || 0, now, true]]);
-      // Also store history
-      storeHistory(userID, latitude, longitude, speed, now);
-      return { success: true };
+    if (String(data[i][1]).trim() === String(userID).trim()) {
+      const prevSpeed = parseFloat(data[i][5]) || 0;
+
+      // Speed preservation: if GPS sends 0 but was moving, keep last known speed
+      // Only reset to 0 if 3 consecutive 0s come in (truly parked)
+      const prevZeroFlag = data[i][8] === 'zero1' ? 1 : data[i][8] === 'zero2' ? 2 : 0;
+      let finalSpeed = newSpeed;
+      let zeroFlag   = true; // isOnline flag column
+
+      if (newSpeed === 0 && prevSpeed > 0) {
+        if (prevZeroFlag < 2) {
+          finalSpeed = prevSpeed; // keep last known speed
+          zeroFlag   = 'zero' + (prevZeroFlag + 1);
+        } else {
+          finalSpeed = 0;         // truly stopped after 3 zeros
+          zeroFlag   = true;
+        }
+      }
+
+      sheet.getRange(i+1, 3, 1, 7).setValues([[
+        parseFloat(latitude), parseFloat(longitude),
+        newAcc, finalSpeed, newBat, now, zeroFlag
+      ]]);
+
+      // Auto-save to history
+      storeHistory(userID, latitude, longitude, finalSpeed, newAcc, newBat, now);
+      return { success: true, speed: finalSpeed };
     }
   }
 
   // New entry
   const recID = 'LOC-' + Utilities.getUuid().substring(0,8);
-  sheet.appendRow([recID, userID, latitude, longitude, accuracy || 0, speed || 0, battery || 0, now, true]);
-  storeHistory(userID, latitude, longitude, speed, now);
+  sheet.appendRow([recID, userID, parseFloat(latitude), parseFloat(longitude),
+    newAcc, newSpeed, newBat, now, true]);
+  storeHistory(userID, latitude, longitude, newSpeed, newAcc, newBat, now);
   return { success: true };
 }
 
-function storeHistory(userID, lat, lng, speed, timestamp) {
+function storeHistory(userID, lat, lng, speed, accuracy, battery, timestamp) {
   const sheet = ss.getSheetByName(SHEETS.HISTORY);
   const today = new Date().toISOString().split('T')[0];
   const histID = 'HIS-' + Utilities.getUuid().substring(0,8);
-  sheet.appendRow([histID, userID, lat, lng, speed || 0, timestamp, today]);
+  sheet.appendRow([histID, userID, parseFloat(lat), parseFloat(lng),
+    parseFloat(speed)||0, timestamp, today,
+    parseFloat(accuracy)||0, parseFloat(battery)||100]);
+}
+
+// Called from frontend batch history save
+function saveHistoryRecord(params) {
+  const { userID, latitude, longitude, speed, accuracy, battery, timestamp, date } = params;
+  if (!userID || !latitude || !longitude) return { error: 'Missing params' };
+  const sheet = ss.getSheetByName(SHEETS.HISTORY);
+  const histID = 'HIS-' + Utilities.getUuid().substring(0,8);
+  const today  = date || new Date().toISOString().split('T')[0];
+  sheet.appendRow([histID, userID, parseFloat(latitude), parseFloat(longitude),
+    parseFloat(speed)||0, timestamp || new Date().toISOString(), today,
+    parseFloat(accuracy)||0, parseFloat(battery)||100]);
+  return { success: true };
 }
 
 function getLocations(params) {
@@ -344,16 +387,22 @@ function getLocations(params) {
     const uid = locData[i][1];
     const lastSeen = new Date(locData[i][7]);
     const minsAgo = (now - lastSeen) / 60000;
-    const isOnline = minsAgo < 2;
+    // Online if seen in last 2 minutes
+    const isOnline = minsAgo < 2 && locData[i][8] !== false;
 
     locations.push({
-      recordID: locData[i][0], userID: uid,
-      name: userMap[uid] ? userMap[uid].name : 'Unknown',
-      role: userMap[uid] ? userMap[uid].role : '',
-      latitude: locData[i][2], longitude: locData[i][3],
-      accuracy: locData[i][4], speed: locData[i][5],
-      battery: locData[i][6], timestamp: locData[i][7],
-      isOnline, minsAgo: Math.round(minsAgo)
+      recordID:  locData[i][0],
+      userID:    uid,
+      name:      userMap[uid] ? userMap[uid].name : 'Unknown',
+      role:      userMap[uid] ? userMap[uid].role : '',
+      latitude:  parseFloat(locData[i][2]) || 0,
+      longitude: parseFloat(locData[i][3]) || 0,
+      accuracy:  parseFloat(locData[i][4]) || 0,
+      speed:     parseFloat(locData[i][5]) || 0,   // always number
+      battery:   parseFloat(locData[i][6]) || 0,
+      timestamp: locData[i][7],
+      isOnline,
+      minsAgo:   Math.round(minsAgo)
     });
   }
   return { success: true, locations };
