@@ -14,7 +14,8 @@ const SHEETS = {
   SOS: 'SOS',
   HISTORY: 'LocationHistory',
   SESSIONS: 'Sessions',
-  NOTIFICATIONS: 'Notifications'
+  NOTIFICATIONS: 'Notifications',
+  VOICE: 'VoiceMessages'
 };
 
 // Initialize all sheets if not exist
@@ -26,7 +27,8 @@ function initializeSheets() {
     [SHEETS.SOS]: ['SOSID','UserID','Latitude','Longitude','Timestamp','Status','Message'],
     [SHEETS.HISTORY]: ['HistoryID','UserID','Latitude','Longitude','Speed','Timestamp','Date'],
     [SHEETS.SESSIONS]: ['SessionID','UserID','Token','CreatedAt','ExpiresAt','Active'],
-    [SHEETS.NOTIFICATIONS]: ['NotifID','UserID','Type','Message','Timestamp','Read']
+    [SHEETS.NOTIFICATIONS]: ['NotifID','UserID','Type','Message','Timestamp','Read'],
+    [SHEETS.VOICE]: ['MsgID','SenderID','SenderName','AudioBase64','Duration','Timestamp','Heard','Recipients']
   };
 
   Object.entries(sheetDefs).forEach(([name, headers]) => {
@@ -95,6 +97,9 @@ function handleRequest(e) {
       case 'getSOSAlerts': result = getSOSAlerts(params); break;
       case 'resolveSOSAlert': result = resolveSOSAlert(params); break;
       case 'saveHistory': result = saveHistoryRecord(params); break;
+      case 'sendVoice': result = sendVoiceMessage(params); break;
+      case 'getVoice': result = getVoiceMessages(params); break;
+      case 'markVoiceHeard': result = markVoiceHeard(params); break;
       case 'addMember': result = addMember(params); break;
       case 'deleteMember': result = deleteMember(params); break;
       case 'updateProfile': result = updateProfile(params); break;
@@ -580,4 +585,73 @@ function getReports(params) {
   }
 
   return { success: true, report: Object.values(report).sort((a,b) => b.date.localeCompare(a.date)) };
+}
+
+// ============================================================
+// VOICE MESSAGES — Walkie Talkie
+// Audio stored as Base64 in Google Sheets
+// ============================================================
+function sendVoiceMessage(params) {
+  const { userID, senderName, audioBase64, duration } = params;
+  if (!userID || !audioBase64) return { error: 'Missing audio data' };
+
+  const sheet = ss.getSheetByName(SHEETS.VOICE);
+  const msgID = 'VOI-' + Utilities.getUuid().substring(0, 8);
+  const now   = new Date().toISOString();
+
+  // Store audio — base64 can be large, Sheets supports up to 50000 chars per cell
+  // For longer audio, truncate gracefully (5 sec max recommended)
+  const audio = audioBase64.substring(0, 50000);
+
+  sheet.appendRow([
+    msgID, userID, senderName || 'Unknown',
+    audio, duration || 0, now, false, 'all'
+  ]);
+
+  // Notify all members
+  addNotificationAll('voice', '🎙️ Voice message from ' + (senderName || 'Unknown'));
+
+  return { success: true, msgID, timestamp: now };
+}
+
+function getVoiceMessages(params) {
+  const { userID, since } = params;
+  const sheet = ss.getSheetByName(SHEETS.VOICE);
+  if (!sheet) return { success: true, messages: [] };
+
+  const data = sheet.getDataRange().getValues();
+  const messages = [];
+  const sinceDate = since ? new Date(since) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][0]) continue;
+    const msgTime = new Date(data[i][5]);
+    if (msgTime < sinceDate) continue;
+
+    messages.push({
+      msgID:      data[i][0],
+      senderID:   data[i][1],
+      senderName: data[i][2],
+      audioBase64:data[i][3],
+      duration:   data[i][4],
+      timestamp:  data[i][5],
+      heard:      data[i][6]
+    });
+  }
+
+  // Return newest first, max 20
+  return { success: true, messages: messages.reverse().slice(0, 20) };
+}
+
+function markVoiceHeard(params) {
+  const { msgID } = params;
+  const sheet = ss.getSheetByName(SHEETS.VOICE);
+  const data  = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === msgID) {
+      sheet.getRange(i + 1, 7).setValue(true);
+      return { success: true };
+    }
+  }
+  return { error: 'Message not found' };
 }

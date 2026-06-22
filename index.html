@@ -365,6 +365,65 @@ tbody tr:last-child td{border:none}
 .leaflet-bar{border:none!important;box-shadow:var(--shadow)!important;border-radius:9px!important;overflow:hidden}
 .leaflet-control-attribution{background:rgba(8,12,20,.7)!important;color:var(--t3)!important;font-size:10px!important}
 .leaflet-control-attribution a{color:var(--accent2)!important}
+
+/* ── WALKIE TALKIE ── */
+.ptt-wrap{display:flex;flex-direction:column;align-items:center;gap:24px;padding:20px 0}
+.ptt-ring{position:relative;display:flex;align-items:center;justify-content:center}
+.ptt-ring-pulse{position:absolute;width:180px;height:180px;border-radius:50%;border:3px solid var(--accent);opacity:0;transform:scale(1);pointer-events:none}
+.ptt-ring-pulse.p1{animation:pttRing 2s ease-out infinite}
+.ptt-ring-pulse.p2{animation:pttRing 2s ease-out infinite .5s}
+.ptt-ring-pulse.p3{animation:pttRing 2s ease-out infinite 1s}
+@keyframes pttRing{0%{transform:scale(.7);opacity:.8}100%{transform:scale(1.6);opacity:0}}
+.ptt-btn{width:140px;height:140px;border-radius:50%;background:linear-gradient(145deg,var(--accent),#a855f7);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:white;font-family:var(--font1);font-size:14px;font-weight:700;box-shadow:0 8px 32px rgba(99,102,241,.5);transition:var(--tr);position:relative;z-index:2;user-select:none;-webkit-user-select:none;touch-action:none}
+.ptt-btn:active,.ptt-btn.recording{background:linear-gradient(145deg,#dc2626,#991b1b);box-shadow:0 8px 40px rgba(239,68,68,.6);transform:scale(.96)}
+.ptt-btn i{font-size:46px}
+.ptt-status{font-size:15px;font-weight:600;color:var(--t2);min-height:24px;text-align:center}
+.ptt-status.rec{color:var(--red);animation:blink 1s infinite}
+.ptt-status.playing{color:var(--green)}
+.ptt-timer{font-family:monospace;font-size:28px;font-weight:700;color:var(--t1);letter-spacing:.05em;min-height:36px}
+.ptt-wave{display:flex;align-items:center;gap:3px;height:40px}
+.ptt-wave-bar{width:4px;border-radius:2px;background:var(--accent);transform-origin:center;animation:waveIdle .8s ease-in-out infinite}
+.ptt-wave-bar:nth-child(1){animation-delay:0s}
+.ptt-wave-bar:nth-child(2){animation-delay:.1s}
+.ptt-wave-bar:nth-child(3){animation-delay:.2s}
+.ptt-wave-bar:nth-child(4){animation-delay:.3s}
+.ptt-wave-bar:nth-child(5){animation-delay:.4s}
+.ptt-wave-bar:nth-child(6){animation-delay:.3s}
+.ptt-wave-bar:nth-child(7){animation-delay:.2s}
+.ptt-wave-bar:nth-child(8){animation-delay:.1s}
+@keyframes waveIdle{0%,100%{height:6px;opacity:.4}50%{height:20px;opacity:1}}
+.ptt-wave.active .ptt-wave-bar{animation:waveActive .15s ease-in-out infinite}
+@keyframes waveActive{0%,100%{height:4px}50%{height:36px}}
+.voice-msg-list{max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.vm-item{display:flex;align-items:center;gap:13px;padding:13px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);transition:var(--tr);position:relative}
+.vm-item.unheard{border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.05)}
+.vm-item.mine{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2);flex-direction:row-reverse}
+.vm-av{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0}
+.vm-info{flex:1}
+.vm-name{font-size:13px;font-weight:600}
+.vm-time{font-size:11px;color:var(--t3);margin-top:2px}
+.vm-dur{font-size:11px;color:var(--t2);margin-top:2px}
+.vm-play-btn{width:38px;height:38px;border-radius:50%;background:var(--accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:var(--tr);box-shadow:0 2px 10px rgba(99,102,241,.4)}
+.vm-play-btn:hover{transform:scale(1.1)}
+.vm-play-btn.playing{background:var(--green);box-shadow:0 2px 10px rgba(34,197,94,.4)}
+
+/* ── ROUTE PLAYBACK ── */
+.pb-controls{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.pb-timeline{width:100%;height:6px;background:var(--bg2);border-radius:3px;cursor:pointer;position:relative;margin:14px 0}
+.pb-progress{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),#a855f7);position:relative;transition:width .3s}
+.pb-progress::after{content:'';position:absolute;right:-7px;top:-5px;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 0 8px rgba(99,102,241,.5)}
+.pb-btn-row{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:12px}
+.pb-ctrl-btn{width:40px;height:40px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);color:var(--t1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:var(--tr)}
+.pb-ctrl-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pb-ctrl-btn.main{width:52px;height:52px;background:var(--accent);border-color:var(--accent);font-size:19px;box-shadow:0 4px 16px rgba(99,102,241,.4)}
+.pb-speed-sel{padding:7px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--t1);font-size:13px;cursor:pointer;outline:none}
+.pb-stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:14px}
+.pb-stat{background:var(--bg2);border-radius:9px;padding:11px;text-align:center}
+.pb-stat-val{font-family:var(--font1);font-size:20px;font-weight:700}
+.pb-stat-lbl{font-size:11px;color:var(--t3);margin-top:2px}
+.pb-map{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);height:420px}
+#pb-map{width:100%;height:100%}
+.pb-point-info{font-size:13px;color:var(--t2);text-align:center;min-height:20px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -484,7 +543,12 @@ tbody tr:last-child td{border:none}
       <div class="nav-item" data-v="tracking" onclick="nav('tracking')"><i class="ni fas fa-map-location-dot"></i> Live Tracking</div>
       <div class="nav-item" data-v="members" onclick="nav('members')"><i class="ni fas fa-users"></i> Family Members</div>
       <div class="nav-sec">Tools</div>
+      <div class="nav-item" data-v="voice" onclick="nav('voice')">
+        <i class="ni fas fa-walkie-talkie"></i> Walkie Talkie
+        <span class="nav-badge" id="voice-nb" style="display:none">0</span>
+      </div>
       <div class="nav-item" data-v="history" onclick="nav('history')"><i class="ni fas fa-clock-rotate-left"></i> Location History</div>
+      <div class="nav-item" data-v="playback" onclick="nav('playback')"><i class="ni fas fa-route"></i> Route Playback</div>
       <div class="nav-item" data-v="geofencing" onclick="nav('geofencing')"><i class="ni fas fa-shield-halved"></i> Geofencing</div>
       <div class="nav-item" data-v="sos" onclick="nav('sos')">
         <i class="ni fas fa-triangle-exclamation"></i> SOS Alerts
@@ -598,6 +662,142 @@ tbody tr:last-child td{border:none}
           <div class="tbl-wrap">
             <table><thead><tr><th>Member</th><th>Latitude</th><th>Longitude</th><th>Speed</th><th>Accuracy</th><th>Battery</th><th>Time</th><th>Date</th></tr></thead>
             <tbody id="h-tbody"><tr><td colspan="8"><div class="spin"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOICE / WALKIE TALKIE -->
+      <div class="view" id="v-voice">
+        <div class="ph">
+          <div><div class="ph-title">🎙️ Walkie Talkie</div><div class="ph-sub">Real-time voice messages — push & talk</div></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadVoiceMessages()"><i class="fas fa-rotate-right"></i> Refresh</button>
+        </div>
+        <div class="g2" style="align-items:start">
+          <!-- PTT Button -->
+          <div class="card" style="text-align:center">
+            <div class="card-title" style="justify-content:center"><i class="fas fa-tower-broadcast"></i> Push To Talk</div>
+            <div class="ptt-wrap">
+              <div class="ptt-wave" id="ptt-wave">
+                <div class="ptt-wave-bar"></div><div class="ptt-wave-bar"></div>
+                <div class="ptt-wave-bar"></div><div class="ptt-wave-bar"></div>
+                <div class="ptt-wave-bar"></div><div class="ptt-wave-bar"></div>
+                <div class="ptt-wave-bar"></div><div class="ptt-wave-bar"></div>
+              </div>
+              <div class="ptt-timer" id="ptt-timer">00:00</div>
+              <div class="ptt-ring">
+                <div class="ptt-ring-pulse p1" id="ptt-pulse1"></div>
+                <div class="ptt-ring-pulse p2" id="ptt-pulse2"></div>
+                <div class="ptt-ring-pulse p3" id="ptt-pulse3"></div>
+                <button class="ptt-btn" id="ptt-btn"
+                  onmousedown="pttStart()" onmouseup="pttStop()" onmouseleave="pttStop()"
+                  ontouchstart="event.preventDefault();pttStart()" ontouchend="event.preventDefault();pttStop()">
+                  <i class="fas fa-microphone" id="ptt-icon"></i>
+                  <span id="ptt-label">HOLD TO<br>TALK</span>
+                </button>
+              </div>
+              <div class="ptt-status" id="ptt-status">Ready to transmit</div>
+            </div>
+            <div style="font-size:12px;color:var(--t3);margin-top:8px;line-height:1.6">
+              <i class="fas fa-info-circle" style="color:var(--accent2)"></i>
+              Button dabao aur bolo — chhodne par send hoga
+            </div>
+          </div>
+          <!-- Message List -->
+          <div class="card">
+            <div class="card-title" style="justify-content:space-between">
+              <span><i class="fas fa-headphones"></i> Voice Log</span>
+              <span id="voice-unread-count" style="font-size:12px;color:var(--accent2)"></span>
+            </div>
+            <div class="voice-msg-list" id="voice-list">
+              <div class="spin"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROUTE PLAYBACK -->
+      <div class="view" id="v-playback">
+        <div class="ph">
+          <div><div class="ph-title">📍 Route Playback</div><div class="ph-sub">Animated history with speed, time & battery</div></div>
+        </div>
+        <!-- Filters -->
+        <div class="card mb4">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px;text-transform:uppercase;font-weight:600">Member</div>
+              <select class="sel" id="pb-mem"></select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px;text-transform:uppercase;font-weight:600">Date</div>
+              <input type="date" class="sel" id="pb-date"/>
+            </div>
+            <button class="btn btn-primary btn-sm" style="align-self:flex-end" onclick="loadPlayback()">
+              <i class="fas fa-play"></i> Load Route
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="pb-stat-row mb4" id="pb-stats" style="display:none">
+          <div class="pb-stat">
+            <div class="pb-stat-val" id="pb-s-points">0</div>
+            <div class="pb-stat-lbl">📍 Points</div>
+          </div>
+          <div class="pb-stat">
+            <div class="pb-stat-val" id="pb-s-maxspd" style="color:var(--orange)">0</div>
+            <div class="pb-stat-lbl">🚗 Max km/h</div>
+          </div>
+          <div class="pb-stat">
+            <div class="pb-stat-val" id="pb-s-avgspd" style="color:var(--cyan)">0</div>
+            <div class="pb-stat-lbl">📊 Avg km/h</div>
+          </div>
+          <div class="pb-stat">
+            <div class="pb-stat-val" id="pb-s-dur" style="color:var(--purple)">0</div>
+            <div class="pb-stat-lbl">⏱ Minutes</div>
+          </div>
+          <div class="pb-stat">
+            <div class="pb-stat-val" id="pb-s-dist" style="color:var(--green)">0</div>
+            <div class="pb-stat-lbl">📏 km Total</div>
+          </div>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="pb-controls" id="pb-ctrl-panel" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-size:12px;color:var(--t3)" id="pb-time-start">--:--</div>
+            <div style="font-size:13px;font-weight:600;color:var(--t1)" id="pb-current-info">Select a point</div>
+            <div style="font-size:12px;color:var(--t3)" id="pb-time-end">--:--</div>
+          </div>
+          <!-- Timeline scrubber -->
+          <div class="pb-timeline" id="pb-timeline" onclick="pbScrub(event)">
+            <div class="pb-progress" id="pb-progress" style="width:0%"></div>
+          </div>
+          <!-- Current point info -->
+          <div class="pb-point-info" id="pb-point-info"></div>
+          <!-- Control buttons -->
+          <div class="pb-btn-row">
+            <button class="pb-ctrl-btn" onclick="pbSkip(-10)" title="Back 10s"><i class="fas fa-backward"></i></button>
+            <button class="pb-ctrl-btn" onclick="pbStep(-1)" title="Previous"><i class="fas fa-step-backward"></i></button>
+            <button class="pb-ctrl-btn main" id="pb-play-btn" onclick="pbTogglePlay()"><i class="fas fa-play"></i></button>
+            <button class="pb-ctrl-btn" onclick="pbStep(1)" title="Next"><i class="fas fa-step-forward"></i></button>
+            <button class="pb-ctrl-btn" onclick="pbSkip(10)" title="Forward 10s"><i class="fas fa-forward"></i></button>
+            <select class="pb-speed-sel" id="pb-speed-sel" onchange="pbSetSpeed(this.value)">
+              <option value="0.5">0.5x</option>
+              <option value="1" selected>1x</option>
+              <option value="2">2x</option>
+              <option value="5">5x</option>
+              <option value="10">10x</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Map -->
+        <div class="pb-map" id="pb-map-wrap">
+          <div id="pb-map" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg2);color:var(--t3)">
+            <div style="text-align:center">
+              <i class="fas fa-route" style="font-size:48px;display:block;margin-bottom:14px"></i>
+              <div style="font-size:15px">Member aur date select karo → Load Route</div>
+            </div>
           </div>
         </div>
       </div>
@@ -735,7 +935,10 @@ tbody tr:last-child td{border:none}
     <div class="bn-item on" data-v="dashboard" onclick="nav('dashboard')"><i class="fas fa-house"></i>Home</div>
     <div class="bn-item" data-v="tracking" onclick="nav('tracking')"><i class="fas fa-map-location-dot"></i>Track</div>
     <div class="sos-fab" onclick="triggerSOS()"><i class="fas fa-sos"></i></div>
-    <div class="bn-item" data-v="members" onclick="nav('members')"><i class="fas fa-users"></i>Family</div>
+    <div class="bn-item" data-v="voice" onclick="nav('voice')" style="position:relative">
+      <i class="fas fa-walkie-talkie"></i>Voice
+      <span class="nbadge" id="voice-bn-nb" style="display:none;position:absolute;top:2px;right:8px">0</span>
+    </div>
     <div class="bn-item" data-v="settings" onclick="nav('settings')"><i class="fas fa-gear"></i>Settings</div>
   </div>
 </div>
@@ -978,6 +1181,8 @@ function nav(view) {
       break;
     case 'members':     loadMembers(); break;
     case 'history':     loadHist(); loadMemDrop('h-mem'); break;
+    case 'voice':       initVoice(); loadVoiceMessages(); break;
+    case 'playback':    initPlaybackMap(); loadMemDrop('pb-mem'); document.getElementById('pb-date').value=new Date().toISOString().split('T')[0]; break;
     case 'geofencing':  loadGeo(); break;
     case 'sos':         loadSOS(); break;
     case 'reports':     loadMemDrop('r-mem'); break;
@@ -1772,6 +1977,542 @@ const v=id=>document.getElementById(id)?.value?.trim()||'';
 function batIcon(b){if(b>75)return'full';if(b>50)return'three-quarters';if(b>25)return'half';if(b>10)return'quarter';return'empty';}
 function batColor(b){if(b>50)return'var(--green)';if(b>20)return'var(--yellow)';return'var(--red)';}
 function timeAgo(ts){const d=Date.now()-new Date(ts).getTime(),m=Math.floor(d/60000);if(m<1)return'Just now';if(m<60)return m+'m ago';const h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
+
+// ═══════════════════════════════════════════════════════════════
+// 🎙️ WALKIE TALKIE — Push To Talk
+// ═══════════════════════════════════════════════════════════════
+const PTT = {
+  recorder: null, stream: null, chunks: [],
+  isRecording: false, timerInterval: null, seconds: 0,
+  lastFetch: null, pollInterval: null,
+  currentAudio: null
+};
+
+function initVoice() {
+  // Start polling for new messages every 5s
+  if (PTT.pollInterval) clearInterval(PTT.pollInterval);
+  PTT.pollInterval = setInterval(loadVoiceMessages, 5000);
+}
+
+async function pttStart() {
+  if (PTT.isRecording) return;
+  // Request mic permission
+  try {
+    PTT.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 }
+    });
+  } catch(e) {
+    toast('Microphone access denied — Settings se allow karo', 'e');
+    return;
+  }
+
+  PTT.chunks = [];
+  PTT.isRecording = true;
+  PTT.seconds = 0;
+
+  // UI — recording state
+  const btn = document.getElementById('ptt-btn');
+  const icon = document.getElementById('ptt-icon');
+  const label = document.getElementById('ptt-label');
+  const status = document.getElementById('ptt-status');
+  const wave = document.getElementById('ptt-wave');
+  const timer = document.getElementById('ptt-timer');
+
+  btn.classList.add('recording');
+  icon.className = 'fas fa-circle';
+  label.innerHTML = 'RECORDING<br>LIVE';
+  status.textContent = '🔴 Transmitting...';
+  status.className = 'ptt-status rec';
+  wave.classList.add('active');
+
+  // Timer
+  PTT.timerInterval = setInterval(() => {
+    PTT.seconds++;
+    const m = String(Math.floor(PTT.seconds / 60)).padStart(2, '0');
+    const s = String(PTT.seconds % 60).padStart(2, '0');
+    timer.textContent = m + ':' + s;
+    // Max 30 seconds
+    if (PTT.seconds >= 30) pttStop();
+  }, 1000);
+
+  // Start recording — use webm/opus for small file size
+  const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+    ? 'audio/webm;codecs=opus'
+    : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+
+  PTT.recorder = new MediaRecorder(PTT.stream, { mimeType, audioBitsPerSecond: 16000 });
+  PTT.recorder.ondataavailable = e => { if (e.data.size > 0) PTT.chunks.push(e.data); };
+  PTT.recorder.start(100); // collect every 100ms
+}
+
+async function pttStop() {
+  if (!PTT.isRecording) return;
+  PTT.isRecording = false;
+  clearInterval(PTT.timerInterval);
+
+  // UI — sending state
+  const btn = document.getElementById('ptt-btn');
+  const icon = document.getElementById('ptt-icon');
+  const label = document.getElementById('ptt-label');
+  const status = document.getElementById('ptt-status');
+  const wave = document.getElementById('ptt-wave');
+
+  btn.classList.remove('recording');
+  icon.className = 'fas fa-paper-plane';
+  label.innerHTML = 'SENDING...';
+  status.textContent = '📤 Sending voice message...';
+  status.className = 'ptt-status';
+  wave.classList.remove('active');
+
+  if (PTT.recorder && PTT.recorder.state !== 'inactive') {
+    PTT.recorder.stop();
+  }
+
+  // Wait for data then send
+  setTimeout(async () => {
+    if (PTT.chunks.length === 0) {
+      resetPTT(); return;
+    }
+    const blob = new Blob(PTT.chunks, { type: PTT.recorder.mimeType });
+    const duration = PTT.seconds;
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = reader.result.split(',')[1];
+
+      // Check size — GAS limit is ~50KB for base64
+      if (base64.length > 48000) {
+        toast('Recording too long — max 15 seconds recommended', 'w');
+        resetPTT(); return;
+      }
+
+      try {
+        const r = await api({
+          action: 'sendVoice',
+          userID: APP.user.userID,
+          senderName: APP.user.name,
+          audioBase64: base64,
+          duration: duration
+        });
+        if (r.success) {
+          toast('✅ Voice message sent!', 's');
+          // Play sent sound
+          playBeep(880, 100);
+          loadVoiceMessages();
+        } else {
+          toast('Send failed: ' + (r.error || 'Unknown'), 'e');
+        }
+      } catch(e) {
+        toast('Voice send failed — check connection', 'e');
+      }
+      resetPTT();
+    };
+    reader.readAsDataURL(blob);
+
+    // Stop mic stream
+    if (PTT.stream) PTT.stream.getTracks().forEach(t => t.stop());
+  }, 300);
+}
+
+function resetPTT() {
+  const btn = document.getElementById('ptt-btn');
+  const icon = document.getElementById('ptt-icon');
+  const label = document.getElementById('ptt-label');
+  const status = document.getElementById('ptt-status');
+  const timer = document.getElementById('ptt-timer');
+  if (!btn) return;
+  btn.classList.remove('recording');
+  icon.className = 'fas fa-microphone';
+  label.innerHTML = 'HOLD TO<br>TALK';
+  status.textContent = 'Ready to transmit';
+  status.className = 'ptt-status';
+  timer.textContent = '00:00';
+  PTT.seconds = 0;
+  PTT.chunks = [];
+}
+
+async function loadVoiceMessages() {
+  const list = document.getElementById('voice-list');
+  if (!list) return;
+
+  try {
+    const r = await api({ action: 'getVoice', userID: APP.user.userID, since: PTT.lastFetch || '' });
+    const msgs = r.messages || [];
+    PTT.lastFetch = new Date().toISOString();
+
+    const unread = msgs.filter(m => !m.heard && m.senderID !== APP.user.userID).length;
+
+    // Update badges
+    const nb = document.getElementById('voice-nb');
+    const bnb = document.getElementById('voice-bn-nb');
+    if (unread > 0) {
+      if (nb) { nb.textContent = unread; nb.style.display = ''; }
+      if (bnb) { bnb.textContent = unread; bnb.style.display = ''; }
+      if (document.getElementById('voice-unread-count'))
+        document.getElementById('voice-unread-count').textContent = unread + ' unread';
+    } else {
+      if (nb) nb.style.display = 'none';
+      if (bnb) bnb.style.display = 'none';
+    }
+
+    // Notify of new voice message if not on voice view
+    if (unread > 0 && document.getElementById('v-voice') && !document.getElementById('v-voice').classList.contains('on')) {
+      toast('🎙️ New voice message received!', 'i');
+      playBeep(440, 200);
+    }
+
+    if (!msgs.length) {
+      list.innerHTML = '<div class="empty"><i class="fas fa-microphone-slash"></i><h3>No messages</h3><p>Press & hold to send voice</p></div>';
+      return;
+    }
+
+    list.innerHTML = msgs.map(m => {
+      const isMine = m.senderID === APP.user.userID;
+      const col = COLORS[Math.abs(m.senderID.charCodeAt(4) || 0) % COLORS.length];
+      const dur = parseInt(m.duration) || 0;
+      const durStr = dur > 0 ? `${dur}s` : '';
+      return `
+      <div class="vm-item ${isMine ? 'mine' : !m.heard ? 'unheard' : ''}" id="vm-${m.msgID}">
+        <div class="vm-av" style="background:${col}">${(m.senderName||'?').charAt(0)}</div>
+        <div class="vm-info">
+          <div class="vm-name">${isMine ? 'You' : m.senderName}</div>
+          <div class="vm-time">${timeAgo(m.timestamp)}</div>
+          ${durStr ? `<div class="vm-dur"><i class="fas fa-clock" style="font-size:10px"></i> ${durStr}</div>` : ''}
+        </div>
+        <button class="vm-play-btn" id="play-${m.msgID}" onclick="playVoice('${m.msgID}','${m.audioBase64?m.audioBase64.substring(0,20):''}',this,${JSON.stringify(m.audioBase64)})">
+          <i class="fas fa-play"></i>
+        </button>
+        ${!m.heard && !isMine ? '<div style="position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)"></div>' : ''}
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    if (document.getElementById('voice-list'))
+      document.getElementById('voice-list').innerHTML = '<div class="empty"><i class="fas fa-exclamation-triangle"></i><h3>Load failed</h3></div>';
+  }
+}
+
+function playVoice(msgID, preview, btn, audioBase64) {
+  // Stop any currently playing
+  if (PTT.currentAudio) {
+    PTT.currentAudio.pause();
+    PTT.currentAudio = null;
+    document.querySelectorAll('.vm-play-btn').forEach(b => {
+      b.innerHTML = '<i class="fas fa-play"></i>';
+      b.classList.remove('playing');
+    });
+  }
+
+  if (!audioBase64) { toast('Audio data missing', 'e'); return; }
+
+  try {
+    // Reconstruct audio from base64
+    const mimeType = audioBase64.startsWith('UklGR') ? 'audio/wav' : 'audio/webm';
+    const binary = atob(audioBase64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+
+    PTT.currentAudio = new Audio(url);
+    PTT.currentAudio.play();
+
+    // UI
+    btn.innerHTML = '<i class="fas fa-stop"></i>';
+    btn.classList.add('playing');
+
+    PTT.currentAudio.onended = () => {
+      btn.innerHTML = '<i class="fas fa-play"></i>';
+      btn.classList.remove('playing');
+      URL.revokeObjectURL(url);
+      PTT.currentAudio = null;
+      // Mark as heard
+      api({ action: 'markVoiceHeard', msgID }).catch(() => {});
+      document.getElementById('vm-' + msgID)?.classList.remove('unheard');
+    };
+
+    PTT.currentAudio.onerror = () => {
+      toast('Playback failed — format not supported', 'e');
+      btn.innerHTML = '<i class="fas fa-play"></i>';
+      btn.classList.remove('playing');
+    };
+  } catch(e) {
+    toast('Cannot play — ' + e.message, 'e');
+  }
+}
+
+function playBeep(freq, dur) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + dur/1000);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur/1000);
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 📍 ROUTE PLAYBACK — Animated History
+// ═══════════════════════════════════════════════════════════════
+const PB = {
+  map: null, points: [], currentIdx: 0,
+  playing: false, speed: 1,
+  timer: null, marker: null,
+  routeLine: null, traveledLine: null,
+  memberName: '', memberColor: ''
+};
+
+function initPlaybackMap() {
+  if (PB.map) { setTimeout(() => PB.map.invalidateSize(), 200); return; }
+  const el = document.getElementById('pb-map');
+  if (!el || el.childElementCount > 0) return;
+  const lat = CFG.HOME_LATITUDE || 25.3960;
+  const lng = CFG.HOME_LONGITUDE || 68.3578;
+  PB.map = L.map('pb-map', { zoomControl: true, attributionControl: false }).setView([lat, lng], 13);
+  const t = TILES[APP.settings.tile || 'osm'];
+  L.tileLayer(t.url, { attribution: t.attr, maxZoom: 19 }).addTo(PB.map);
+}
+
+async function loadPlayback() {
+  const uid = document.getElementById('pb-mem').value;
+  const dt  = document.getElementById('pb-date').value;
+  if (!uid) { toast('Member select karo', 'w'); return; }
+  if (!dt)  { toast('Date select karo', 'w'); return; }
+
+  toast('Loading route...', 'i');
+
+  try {
+    const [hr, mr] = await Promise.all([
+      api({ action: 'getHistory', userID: uid, date: dt }),
+      api({ action: 'getMembers' })
+    ]);
+
+    const hist = hr.history || [];
+    const mem  = (mr.members || []).find(m => m.userID === uid);
+    PB.memberName  = mem ? mem.name : uid;
+    PB.memberColor = COLORS[(mr.members||[]).indexOf(mem) % COLORS.length] || COLORS[0];
+
+    // Filter valid points
+    PB.points = hist.filter(h =>
+      parseFloat(h.latitude) && parseFloat(h.longitude)
+    ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    if (PB.points.length < 2) {
+      toast('Is date pe kafi data nahi — doosri date try karo', 'w');
+      return;
+    }
+
+    // Calculate stats
+    const speeds = PB.points.map(p => parseFloat(p.speed || 0));
+    const maxSpd = Math.max(...speeds);
+    const avgSpd = speeds.filter(s => s > 0).reduce((a, b) => a + b, 0) / (speeds.filter(s => s > 0).length || 1);
+
+    // Distance (Haversine)
+    let totalDist = 0;
+    for (let i = 1; i < PB.points.length; i++) {
+      totalDist += haversine(
+        PB.points[i-1].latitude, PB.points[i-1].longitude,
+        PB.points[i].latitude,   PB.points[i].longitude
+      );
+    }
+
+    const startTime = new Date(PB.points[0].timestamp);
+    const endTime   = new Date(PB.points[PB.points.length-1].timestamp);
+    const durationMins = Math.round((endTime - startTime) / 60000);
+
+    // Show stats
+    document.getElementById('pb-stats').style.display = 'grid';
+    document.getElementById('pb-s-points').textContent = PB.points.length;
+    document.getElementById('pb-s-maxspd').textContent = maxSpd.toFixed(0);
+    document.getElementById('pb-s-avgspd').textContent = avgSpd.toFixed(0);
+    document.getElementById('pb-s-dur').textContent = durationMins;
+    document.getElementById('pb-s-dist').textContent = totalDist.toFixed(1);
+
+    // Time range
+    document.getElementById('pb-time-start').textContent = startTime.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('pb-time-end').textContent   = endTime.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+
+    // Show controls
+    document.getElementById('pb-ctrl-panel').style.display = 'block';
+
+    // Init map
+    initPlaybackMap();
+    setTimeout(() => {
+      setupPlaybackMap();
+      PB.map.invalidateSize();
+    }, 300);
+
+    toast(`✅ ${PB.points.length} location points loaded!`, 's');
+
+  } catch(e) {
+    toast('Route load failed: ' + e.message, 'e');
+  }
+}
+
+function setupPlaybackMap() {
+  if (!PB.map) return;
+
+  // Clear old layers
+  if (PB.routeLine)   PB.map.removeLayer(PB.routeLine);
+  if (PB.traveledLine) PB.map.removeLayer(PB.traveledLine);
+  if (PB.marker)      PB.map.removeLayer(PB.marker);
+
+  const latLngs = PB.points.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)]);
+
+  // Full route — dim line
+  PB.routeLine = L.polyline(latLngs, {
+    color: PB.memberColor, weight: 3, opacity: .25, dashArray: '6,4'
+  }).addTo(PB.map);
+
+  // Traveled route — bright line
+  PB.traveledLine = L.polyline([], {
+    color: PB.memberColor, weight: 5, opacity: .85
+  }).addTo(PB.map);
+
+  // Start & End markers
+  L.circleMarker(latLngs[0], { radius: 10, color: '#22c55e', fillColor: '#22c55e', fillOpacity: 1, weight: 3 })
+    .addTo(PB.map).bindTooltip('🟢 Start: ' + new Date(PB.points[0].timestamp).toLocaleTimeString());
+  L.circleMarker(latLngs[latLngs.length-1], { radius: 10, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1, weight: 3 })
+    .addTo(PB.map).bindTooltip('🔴 End: ' + new Date(PB.points[PB.points.length-1].timestamp).toLocaleTimeString());
+
+  // Moving marker
+  const pinIcon = L.divIcon({
+    className: '',
+    html: `<div style="width:36px;height:36px;border-radius:50%;background:${PB.memberColor};border:3px solid white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;box-shadow:0 3px 12px rgba(0,0,0,.4);transition:all .3s">${PB.memberName.charAt(0)}</div>`,
+    iconSize: [36, 36], iconAnchor: [18, 18]
+  });
+
+  PB.marker = L.marker(latLngs[0], { icon: pinIcon, zIndexOffset: 1000 }).addTo(PB.map);
+
+  // Fit map to route
+  PB.map.fitBounds(PB.routeLine.getBounds().pad(.15));
+
+  // Reset to start
+  PB.currentIdx = 0;
+  pbUpdateDisplay();
+}
+
+function pbTogglePlay() {
+  PB.playing = !PB.playing;
+  const btn = document.getElementById('pb-play-btn');
+  if (PB.playing) {
+    btn.innerHTML = '<i class="fas fa-pause"></i>';
+    if (PB.currentIdx >= PB.points.length - 1) { PB.currentIdx = 0; }
+    pbTick();
+  } else {
+    btn.innerHTML = '<i class="fas fa-play"></i>';
+    clearTimeout(PB.timer);
+  }
+}
+
+function pbTick() {
+  if (!PB.playing) return;
+  if (PB.currentIdx >= PB.points.length - 1) {
+    PB.playing = false;
+    document.getElementById('pb-play-btn').innerHTML = '<i class="fas fa-play"></i>';
+    toast('Route playback complete!', 's');
+    return;
+  }
+  PB.currentIdx++;
+  pbUpdateDisplay();
+
+  // Speed based on real time difference between points
+  const curr = new Date(PB.points[PB.currentIdx].timestamp);
+  const prev = new Date(PB.points[PB.currentIdx - 1].timestamp);
+  const realDiffMs = curr - prev;
+  const delay = Math.max(100, Math.min(realDiffMs / PB.speed, 3000));
+
+  PB.timer = setTimeout(pbTick, delay);
+}
+
+function pbUpdateDisplay() {
+  if (!PB.points.length || !PB.map) return;
+  const idx = PB.currentIdx;
+  const p   = PB.points[idx];
+  const lat = parseFloat(p.latitude);
+  const lng = parseFloat(p.longitude);
+  const spd = parseFloat(p.speed || 0);
+  const bat = parseFloat(p.battery || 0);
+  const acc = parseFloat(p.accuracy || 0);
+  const ts  = new Date(p.timestamp);
+
+  // Move marker
+  PB.marker.setLatLng([lat, lng]);
+
+  // Update traveled line
+  const traveledPoints = PB.points.slice(0, idx + 1).map(pt => [parseFloat(pt.latitude), parseFloat(pt.longitude)]);
+  PB.traveledLine.setLatLngs(traveledPoints);
+
+  // Color marker based on speed
+  const spdColor = spd > 60 ? '#ef4444' : spd > 30 ? '#f97316' : spd > 5 ? '#22c55e' : '#6366f1';
+
+  // Center map on marker
+  PB.map.panTo([lat, lng], { animate: true, duration: 0.5 });
+
+  // Update progress bar
+  const pct = (idx / (PB.points.length - 1)) * 100;
+  document.getElementById('pb-progress').style.width = pct + '%';
+
+  // Update info
+  document.getElementById('pb-current-info').textContent =
+    ts.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  document.getElementById('pb-point-info').innerHTML =
+    `<span style="color:${spdColor};font-weight:600">${spd > 0 ? '🚗 ' + spd.toFixed(1) + ' km/h' : '⬤ Parked'}</span>
+     &nbsp;·&nbsp; 🔋 <span style="color:${batColor(bat)}">${bat}%</span>
+     &nbsp;·&nbsp; 🎯 ±${acc}m
+     &nbsp;·&nbsp; <span style="color:var(--t3)">${idx+1}/${PB.points.length}</span>`;
+}
+
+function pbStep(dir) {
+  PB.playing = false;
+  document.getElementById('pb-play-btn').innerHTML = '<i class="fas fa-play"></i>';
+  clearTimeout(PB.timer);
+  PB.currentIdx = Math.max(0, Math.min(PB.points.length - 1, PB.currentIdx + dir));
+  pbUpdateDisplay();
+}
+
+function pbSkip(seconds) {
+  if (!PB.points.length) return;
+  const currentTime = new Date(PB.points[PB.currentIdx].timestamp);
+  const targetTime  = new Date(currentTime.getTime() + seconds * 1000);
+  let best = PB.currentIdx;
+  let bestDiff = Infinity;
+  PB.points.forEach((p, i) => {
+    const diff = Math.abs(new Date(p.timestamp) - targetTime);
+    if (diff < bestDiff) { bestDiff = diff; best = i; }
+  });
+  PB.currentIdx = best;
+  pbUpdateDisplay();
+}
+
+function pbScrub(event) {
+  if (!PB.points.length) return;
+  const rect = event.currentTarget.getBoundingClientRect();
+  const pct  = (event.clientX - rect.left) / rect.width;
+  PB.currentIdx = Math.round(pct * (PB.points.length - 1));
+  pbUpdateDisplay();
+}
+
+function pbSetSpeed(val) {
+  PB.speed = parseFloat(val);
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
 </script>
 </body>
 </html>
