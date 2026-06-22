@@ -416,21 +416,47 @@ function getLocations(params) {
 function getLocationHistory(params) {
   const { userID, date, limit } = params;
   const sheet = ss.getSheetByName(SHEETS.HISTORY);
+  if (!sheet) return { success: true, history: [], error: 'Sheet not found' };
+
   const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { success: true, history: [], total: 0 };
+
   const results = [];
+  const filterUID  = userID ? String(userID).trim() : null;
+  const filterDate = date   ? String(date).trim()   : null;
 
   for (let i = 1; i < data.length; i++) {
-    if (userID && data[i][1] !== userID) continue;
-    if (date && data[i][6] !== date) continue;
+    const row = data[i];
+    if (!row[0]) continue; // skip empty rows
+
+    const rowUID  = String(row[1] || '').trim();
+    const rowDate = String(row[6] || '').trim();
+
+    // Loose match — ignore case, trim spaces
+    if (filterUID  && rowUID  !== filterUID)  continue;
+    if (filterDate && rowDate !== filterDate) continue;
+
+    // Support both old schema (7 cols) and new schema (9 cols with accuracy+battery)
     results.push({
-      historyID: data[i][0], userID: data[i][1],
-      latitude: data[i][2], longitude: data[i][3],
-      speed: data[i][4], timestamp: data[i][5], date: data[i][6]
+      historyID: String(row[0]),
+      userID:    rowUID,
+      latitude:  parseFloat(row[2]) || 0,
+      longitude: parseFloat(row[3]) || 0,
+      speed:     parseFloat(row[4]) || 0,
+      timestamp: row[5] ? String(row[5]) : '',
+      date:      rowDate,
+      accuracy:  parseFloat(row[7]) || 0,   // col 8 — new
+      battery:   parseFloat(row[8]) || 0    // col 9 — new
     });
   }
 
-  const limited = limit ? results.slice(-parseInt(limit)) : results.slice(-500);
-  return { success: true, history: limited };
+  // Sort by timestamp ascending
+  results.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  const maxRecords = limit ? parseInt(limit) : 500;
+  const limited = results.slice(-maxRecords);
+
+  return { success: true, history: limited, total: results.length };
 }
 
 // ============================================================

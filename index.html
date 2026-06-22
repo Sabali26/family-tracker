@@ -2,6 +2,9 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
 <base href="./"/>
 <meta name="theme-color" content="#6366f1"/>
@@ -10,6 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Family Tracker"/>
 <meta name="description" content="Secure real-time family location tracking"/>
 <title>Family Tracker Pro</title>
+<meta name="app-version" content="20240622001"/>
 <link rel="manifest" href="./manifest.json"/>
 <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -977,11 +981,67 @@ const TILES = {
 // ═══════════════════════════════════════════════
 window.addEventListener('load', () => {
   if ('serviceWorker' in navigator) {
-    // Get base path dynamically for any GitHub Pages repo
     const swPath = window.location.pathname.replace(/\/[^\/]*$/, '/') + 'sw.js';
-    navigator.serviceWorker.register(swPath, { scope: window.location.pathname.replace(/\/[^\/]*$/, '/') })
-      .then(r => console.log('[SW] Registered:', r.scope))
+    const swScope = window.location.pathname.replace(/\/[^\/]*$/, '/');
+
+    navigator.serviceWorker.register(swPath, { scope: swScope, updateViaCache: 'none' })
+      .then(reg => {
+        console.log('[SW] Registered:', reg.scope);
+
+        // Check for updates every 60 seconds
+        setInterval(() => reg.update(), 60000);
+
+        // New SW waiting — show update banner
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version ready — show banner
+              showUpdateBanner(newSW);
+            }
+          });
+        });
+      })
       .catch(e => console.log('[SW] Failed:', e));
+
+    // When new SW takes control — reload page
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!window._swReloading) {
+        window._swReloading = true;
+        window.location.reload();
+      }
+    });
+  }
+
+  function showUpdateBanner(newSW) {
+    // Remove old banner if exists
+    document.getElementById('update-banner')?.remove();
+    const banner = document.createElement('div');
+    banner.id = 'update-banner';
+    banner.style.cssText = `
+      position:fixed;top:0;left:0;right:0;z-index:99999;
+      background:linear-gradient(135deg,#6366f1,#a855f7);
+      padding:12px 20px;display:flex;align-items:center;gap:14px;
+      box-shadow:0 4px 20px rgba(99,102,241,.5);
+      animation:slideDown .4s ease;
+    `;
+    banner.innerHTML = `
+      <style>@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}</style>
+      <i class="fas fa-rotate" style="color:white;font-size:18px"></i>
+      <div style="flex:1;color:white">
+        <div style="font-weight:700;font-size:14px">🚀 New Update Available!</div>
+        <div style="font-size:12px;opacity:.85">Portal update ho gayi — reload karo</div>
+      </div>
+      <button onclick="applyUpdate(${JSON.stringify(newSW)})" style="background:white;color:#6366f1;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">
+        Update Now
+      </button>
+      <button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,.2);color:white;border:none;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px">✕</button>
+    `;
+    document.body.prepend(banner);
+  }
+
+  function applyUpdate(newSW) {
+    newSW.postMessage('SKIP_WAITING');
   }
   // Handle GitHub Pages 404 redirect
   const redir = sessionStorage.getItem('ft_redirect');
@@ -1138,6 +1198,48 @@ function startApp() {
   refreshAll();
   startTracking();
   setInterval(refreshLive, 30000);
+
+  // ── Auto Version Check ──────────────────────────────────────
+  // Har 5 minute mein server se latest HTML check karo
+  // Agar version different hai → update banner dikhao
+  const CURRENT_VERSION = document.querySelector('meta[name="app-version"]')?.content || '0';
+  
+  async function checkForUpdates() {
+    try {
+      // Fetch with no-cache to bypass browser cache
+      const res = await fetch(window.location.href, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      });
+      const html = await res.text();
+      const match = html.match(/name="app-version" content="([^"]+)"/);
+      const serverVersion = match ? match[1] : '0';
+      
+      if (serverVersion !== CURRENT_VERSION && serverVersion !== '0') {
+        console.log('[Update] New version:', serverVersion, '(current:', CURRENT_VERSION + ')');
+        showPageUpdateBanner();
+      }
+    } catch(e) {} // silent fail
+  }
+  
+  function showPageUpdateBanner() {
+    if (document.getElementById('page-update-banner')) return; // already showing
+    const b = document.createElement('div');
+    b.id = 'page-update-banner';
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#10b981);padding:11px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(5,150,105,.4);animation:slideDown .3s ease';
+    b.innerHTML = `
+      <i class="fas fa-arrows-rotate" style="color:white;font-size:17px"></i>
+      <div style="flex:1;color:white"><div style="font-weight:700;font-size:14px">⚡ Portal Update Available!</div>
+      <div style="font-size:12px;opacity:.85">Nayi version ready hai — click karo update ke liye</div></div>
+      <button onclick="window.location.reload(true)" style="background:white;color:#059669;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">🔄 Reload</button>
+      <button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,.2);color:white;border:none;width:30px;height:30px;border-radius:6px;cursor:pointer">✕</button>
+    `;
+    document.body.prepend(b);
+  }
+
+  // Check every 5 minutes
+  setTimeout(checkForUpdates, 10000); // first check after 10s
+  setInterval(checkForUpdates, 5 * 60 * 1000);
   if (Notification.permission==='granted') document.getElementById('t-notif').classList.add('on');
 }
 
@@ -1705,12 +1807,19 @@ async function doDelMem(uid){
 // HISTORY
 // ═══════════════════════════════════════════════
 async function loadHist(){
-  document.getElementById('h-tbody').innerHTML='<tr><td colspan="6"><div class="spin"></div></td></tr>';
+  document.getElementById('h-tbody').innerHTML='<tr><td colspan="8"><div class="spin"></div></td></tr>';
   const uid=v('h-mem'), dt=v('h-date');
+  console.log('[History] Fetching uid:', uid||'ALL', 'date:', dt||'ALL');
   try{
     const [hr,mr]=await Promise.all([api({action:'getHistory',userID:uid,date:dt}),api({action:'getMembers'})]);
+    console.log('[History] Response:', hr);
     const hist=hr.history||[], mmap=(mr.members||[]).reduce((a,m)=>{a[m.userID]=m.name;return a;},{});
-    if(!hist.length){document.getElementById('h-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:28px">No records found</td></tr>';return;}
+    if(hr.error) { document.getElementById('h-tbody').innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--red);padding:28px">GAS Error: ${hr.error}</td></tr>`; return; }
+    if(!hist.length){document.getElementById('h-tbody').innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:28px">
+      <i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:10px"></i>
+      Koi record nahi mila — member ya date change karo<br>
+      <small style="color:var(--t3)">Total sheet rows: ${hr.total||0}</small>
+    </td></tr>`;return;}
     document.getElementById('h-tbody').innerHTML=hist.map(h=>{
       const spd=parseFloat(h.speed||0);
       const acc=parseFloat(h.accuracy||0);
@@ -1725,7 +1834,7 @@ async function loadHist(){
         <td style="color:var(--t2);font-size:12px">${new Date(h.timestamp).toLocaleTimeString()}</td>
         <td style="color:var(--t3);font-size:12px">${h.date}</td></tr>`;
     }).join('');
-  }catch(e){document.getElementById('h-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--red)">Load failed</td></tr>';}
+  }catch(e){document.getElementById('h-tbody').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--red);">⚠️ Load failed — console check karo</td></tr>';}
 }
 
 async function loadMemDrop(id){
@@ -2285,12 +2394,16 @@ async function loadPlayback() {
   if (!dt)  { toast('Date select karo', 'w'); return; }
 
   toast('Loading route...', 'i');
+  console.log('[Playback] Fetching uid:', uid, 'date:', dt);
 
   try {
     const [hr, mr] = await Promise.all([
       api({ action: 'getHistory', userID: uid, date: dt }),
       api({ action: 'getMembers' })
     ]);
+
+    console.log('[Playback] History response:', hr);
+    if (hr.error) { toast('GAS Error: ' + hr.error, 'e'); return; }
 
     const hist = hr.history || [];
     const mem  = (mr.members || []).find(m => m.userID === uid);
@@ -2302,8 +2415,26 @@ async function loadPlayback() {
       parseFloat(h.latitude) && parseFloat(h.longitude)
     ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
+    console.log('[Playback] Valid points:', PB.points.length, 'of', hist.length, 'total');
+    if (PB.points.length === 0) {
+      toast(`Is date pe koi data nahi. Total fetched: ${hist.length}`, 'w');
+      return;
+    }
     if (PB.points.length < 2) {
-      toast('Is date pe kafi data nahi — doosri date try karo', 'w');
+      toast(`Sirf ${PB.points.length} point mila — playback ke liye kam se kam 2 chahiye`, 'w');
+      // Still show the single point on map
+      initPlaybackMap();
+      setTimeout(() => {
+        if (PB.map) {
+          const p = PB.points[0];
+          PB.map.setView([parseFloat(p.latitude), parseFloat(p.longitude)], 16);
+          L.circleMarker([parseFloat(p.latitude), parseFloat(p.longitude)], 
+            {radius:14, color:COLORS[0], fillColor:COLORS[0], fillOpacity:.9})
+            .addTo(PB.map)
+            .bindPopup(`${PB.memberName}<br>${new Date(p.timestamp).toLocaleString()}`).openPopup();
+          PB.map.invalidateSize();
+        }
+      }, 400);
       return;
     }
 
